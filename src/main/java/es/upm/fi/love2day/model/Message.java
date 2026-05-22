@@ -32,9 +32,45 @@ public class Message {
     private LocalTime createdAt;
 	
 	// necesario para JPA
-	public Account() {}
-	
-    //TODO: Constructor y getters y setters
+	public Message() {}
+
+    //TODO:Añadir los otros campos
+    public Message(Long id, Long senderId, String content, MessageType type) {
+        this.id = id;
+        this.senderId = senderId;
+        this.content = content;
+        this.type = type;
+        this.createdAt = LocalTime.now();
+        this.status = MessageStatus.PENDING;    //TODO:
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getSenderId() {
+        return senderId;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public MessageType getType() {
+        return type;
+    }
+
+    public MessageStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(MessageStatus status) {
+        this.status = status;
+    }
+
+    public LocalTime getCreatedAt() {
+        return createdAt;
+    }
 }
 
 

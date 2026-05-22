@@ -1,0 +1,42 @@
+package es.upm.fi.love2day.service;
+
+import java.util.Optional;
+
+import es.upm.fi.love2day.model.Message;
+import es.upm.fi.love2day.model.Document;
+import es.upm.fi.love2day.repository.MessagesRepository;
+
+@Service
+public class MessageService {
+    private final MessagesRepository messagesRepository;
+
+    public MessageService(MessagesRepository repository) {
+        this.messagesRepository = repository;
+    }
+
+    public Message createMessage(Long id, Long senderId, String content, MessageType type) {
+        Message Message = new Message(id, senderId, content, type);
+
+        return messagesRepository.save(Message);
+    }
+
+    public Optional<Message> findById(Long id) {
+        return messagesRepository.findById(id);
+    }
+
+    public Optional<Message> findByChatId(Long chatId) {
+        return messagesRepository.findByChatId(chatId);
+    }
+
+    public void setEstado(Long id, MessageStatus status) {
+        Message Message = messagesRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Message not found"));
+
+        message.setStatus(status); 
+    }
+
+    public void deleteMessage(Long id) {
+        messagesRepository.deleteById(id);
+    }
+}
