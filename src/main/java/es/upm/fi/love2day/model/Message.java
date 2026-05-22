@@ -10,16 +10,16 @@ import jakarta.persistence.Column;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "Accounts")  
-public class Account {
+@Table(name = "Messages")  
+public class Message {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-    @Column(nullable = false, unique = false)
-    private long senderid;
+    @Column(nullable = false, unique = true)
+    private Long senderId;
 
-    @Column(nullable = false, unique = false)
+    @Column(nullable = false, unique = true)
     private String content;
 
     @Column(nullable = false)
@@ -27,16 +27,14 @@ public class Account {
 
     @Column(nullable = false)
     private MessageStatus status;
-
+    
     @Column(nullable = false)
     private LocalTime createdAt;
-
-    //@Column(nullable = false)
-    //private LocalTime updatedAt;
 	
 	// necesario para JPA
-	public Message() {}
+	public Account() {}
 	
-    //TODO: Getters y setters y constructor
+    //TODO: Constructor y getters y setters
 }
+
 
