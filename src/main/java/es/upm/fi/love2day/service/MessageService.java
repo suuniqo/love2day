@@ -14,7 +14,7 @@ public class MessageService {
         this.messagesRepository = repository;
     }
 
-    public Message createMessage(Long id, Long senderId, String content, MessageType type) {
+    public Message createMessage(Long id, Long senderId, String content, MediaType type) {
         Message Message = new Message(id, senderId, content, type);
 
         return messagesRepository.save(Message);

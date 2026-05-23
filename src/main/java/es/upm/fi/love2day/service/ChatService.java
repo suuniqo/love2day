@@ -3,8 +3,8 @@ package es.upm.fi.love2day.service;
 import java.util.Optional;
 
 import es.upm.fi.love2day.model.Document;
-import main.java.es.upm.fi.love2day.model.Chat;
-import main.java.es.upm.fi.love2day.repository.ChatsRepository;
+import es.upm.fi.love2day.model.Chat;
+import es.upm.fi.love2day.repository.ChatsRepository;
 
 @Service
 public class ChatService {

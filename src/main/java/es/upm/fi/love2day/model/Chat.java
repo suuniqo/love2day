@@ -1,56 +1,46 @@
 package es.upm.fi.love2day.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Column;
 
-import java.util.List;
-
-import java.time.LocalTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "Chats")  
 public class Chat {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long chatId;
-
-    @Column(nullable = false, unique = true)
+    @Id
     private Long matchId;
 
-    @Column(nullable = false, unique = true)
-    private Acount user;
+    @Column(nullable = false)
+    private Instant createdAt;
 
     @Column(nullable = false)
-    private List<Message> messages;
-	
-	// necesario para JPA
+    private boolean isActive;
+
+    // necesario para JPA
 	public Chat() {}
 
-    public Chat(Long chatId, Long matchId, Acount user) {
-        this.chatId = chatId;
+	private Chat(Long matchId, Instant createdAt, boolean isActive) {
         this.matchId = matchId;
-        this.user = user;
-        this.messages = new ArrayList<>();      //TODO: Qué estructura?
+        this.createdAt = createdAt;
+        this.isActive = isActive;
     }
 
-    public Long getChatId() {
-        return chatId;
+	public static Chat create(Long matchId) {
+        return new Chat(matchId, Instant.now(), true);
     }
 
     public Long getMatchId() {
         return matchId;
     }
 
-    public Acount getUser() {
-        return user;
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
-    public List<Message> getMessages() {
-        return messages;
+    public boolean getIsActive() {
+        return isActive;
     }
-
 }

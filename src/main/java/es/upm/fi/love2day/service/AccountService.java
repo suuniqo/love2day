@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import es.upm.fi.love2day.model.Account;
-import es.upm.fi.love2day.model.Document;
 import es.upm.fi.love2day.repository.AccountsRepository;
 
 @Service
@@ -28,7 +27,7 @@ public class AccountService {
         }
 
         String passwordHash = passwordEncoder.encode(passwordRaw);
-        Account account = new Account(username, email, passwordHash, false);
+        Account account = Account.create(username, email, passwordHash);
 
         return accountsRepository.save(account);
     }
@@ -41,15 +40,16 @@ public class AccountService {
         return accountsRepository.findByUsername(username);
     }
 
-    public Account verifyAccount(Long id, Document document) {
-        Account account = accountsRepository
-            .findById(id)
-            .orElseThrow(() -> new RuntimeException("Account not found"));
-
-        account.setVerified(true); // TODO: implementar verificación de verdad
-
-        return accountsRepository.save(account);
-    }
+    // public Account verifyAccount(Long id, Document document) {
+    //     Account account = accountsRepository
+    //         .findById(id)
+    //         .orElseThrow(() -> new RuntimeException("Account not found"));
+    //
+    //     account.setVerified(true); // TODO: implementar verificación de verdad
+    //
+    //     return accountsRepository.save(account);
+    // }
+    //
 
     public void deleteAccount(Long id) {
         accountsRepository.deleteById(id);

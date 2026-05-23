@@ -1,13 +1,15 @@
 package es.upm.fi.love2day.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 
-import java.time.LocalTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "Messages")  
@@ -16,32 +18,57 @@ public class Message {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private Long senderId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
+    private Long matchId;
+
+    @Column(nullable = false)
+    private String mediaKind;
+
+    @Column(nullable = false)
     private String content;
 
     @Column(nullable = false)
-    private MessageType type;
+    private Instant createdAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MessageStatus status;
-    
-    @Column(nullable = false)
-    private LocalTime createdAt;
 	
 	// necesario para JPA
 	public Message() {}
 
-    //TODO:Añadir los otros campos
-    public Message(Long id, Long senderId, String content, MessageType type) {
-        this.id = id;
+    private Message(
+        Long senderId,
+        Long matchId,
+        String type,
+        String content,
+        Instant createdAt,
+        MessageStatus status
+    ) {
         this.senderId = senderId;
         this.content = content;
-        this.type = type;
-        this.createdAt = LocalTime.now();
-        this.status = MessageStatus.PENDING;    //TODO:
+        this.mediaKind = type;
+        this.createdAt = createdAt;
+        this.status = status;
+    }
+
+    public static Message create(
+        Long senderId,
+        Long matchId,
+        String type,
+        String content
+    ) {
+        return new Message(
+            senderId,
+            matchId,
+            type,
+            content,
+            Instant.now(),
+            MessageStatus.SENDING
+        );
     }
 
     public Long getId() {
@@ -52,12 +79,20 @@ public class Message {
         return senderId;
     }
 
+    public Long getMatchId() {
+        return matchId;
+    }
+
+    public String getMediaKind() {
+        return mediaKind;
+    }
+
     public String getContent() {
         return content;
     }
 
-    public MessageType getType() {
-        return type;
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
     public MessageStatus getStatus() {
@@ -67,10 +102,4 @@ public class Message {
     public void setStatus(MessageStatus status) {
         this.status = status;
     }
-
-    public LocalTime getCreatedAt() {
-        return createdAt;
-    }
 }
-
-
