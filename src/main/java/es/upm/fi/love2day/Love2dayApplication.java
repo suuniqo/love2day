@@ -9,5 +9,4 @@ public class Love2dayApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(Love2dayApplication.class, args);
 	}
-
 }

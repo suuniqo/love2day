@@ -5,20 +5,27 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
+import es.upm.fi.love2day.service.MessageWebSocketHandler;
 import es.upm.fi.love2day.service.VerificationWebSocketHandler;
 
 @Configuration
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
 
-    private final VerificationWebSocketHandler handler;
+    private final VerificationWebSocketHandler verificationHandler;
+    private final MessageWebSocketHandler messageHandler;
 
-    public WebSocketConfig(VerificationWebSocketHandler handler) {
-        this.handler = handler;
+    public WebSocketConfig(
+        VerificationWebSocketHandler verificationHandler,
+        MessageWebSocketHandler messageHandler
+    ) {
+        this.verificationHandler = verificationHandler;
+        this.messageHandler = messageHandler;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(handler, "/ws/verification").setAllowedOrigins("*");
+        registry.addHandler(verificationHandler, "/ws/verification").setAllowedOrigins("*");
+        registry.addHandler(messageHandler, "/ws/messages").setAllowedOrigins("*");
     }
 }
