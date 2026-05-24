@@ -1,45 +1,84 @@
 package es.upm.fi.love2day.service;
 
-import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import es.upm.fi.love2day.repository.ProfilesRepository;
+import es.upm.fi.love2day.exceptions.BadRequestException;
+import es.upm.fi.love2day.exceptions.NotFoundException;
+import es.upm.fi.love2day.model.Match;
+import es.upm.fi.love2day.model.Swipe;
+import es.upm.fi.love2day.model.SwipeType;
+import es.upm.fi.love2day.repository.SwipesRepository;
 
 @Service
 public class SwipeService {
-    private final SwipeRepository swipesRepository;
+    // Match es null si no hay match
+    public record SwipeResult(Swipe swipe, Match match) {}
 
-    public SwipeService(SwipeRepository repository) {
+    private final SwipesRepository swipesRepository;
+    private final MatchService matchService;
+
+    public SwipeService(SwipesRepository repository, MatchService matchService) {
         this.swipesRepository = repository;
+        this.matchService = matchService;
     }
 
     @Transactional
-    public Swipe createSwipe(String username, String email, String passwordRaw) {
-        if (swipesRepository.existsByUsername(username)) {
-            throw new ConflictException("Username already taken");
-        }
-        if (swipesRepository.existsByEmail(email)) {
-            throw new ConflictException("Email already registered");
+    private Match tryCreateMatch(Long sourceId, Long targetId, SwipeType type) {
+        if (!type.isLike()) {
+            return null;
         }
 
-        Swipe swipe = Swipe.create(
-            username,
-            email,
-            passwordEncoder.encode(passwordRaw)
-        );
+        boolean mutualLike = swipesRepository
+            .findBySourceIdAndTargetId(targetId, sourceId)
+            .map(Swipe::getType)
+            .map(SwipeType::isLike)
+            .orElse(false);
 
-        return swipesRepository.save(swipe);
+        return mutualLike
+            ? matchService.createMatch(sourceId, targetId)
+            : null;
     }
 
-    public Optional<Swipe> findById(Long id) {
-        return swipesRepository.findById(id);
+    @Transactional
+    public SwipeResult createSwipe(Long sourceId, Long targetId, SwipeType type) {
+        if (swipesRepository.existsBySourceIdAndTargetId(sourceId, targetId)) {
+            throw new BadRequestException("Swipe already made from " + sourceId + " to " + targetId);
+        }
+
+        Swipe swipe = Swipe.create(sourceId, targetId, type);
+        swipesRepository.save(swipe);
+
+        Match match = tryCreateMatch(sourceId, targetId, type);
+
+        return new SwipeResult(swipe, match);
     }
 
-    public Optional<Swipe> findByUserId(Long id) {
-        return swipesRepository.findByUserId(id);
+    @Transactional(readOnly = true)
+    public Page<Swipe> getSwipeHistory(Long userId, Pageable pageable) {
+        return swipesRepository.findBySourceId(userId, pageable);
     }
 
-    public void deleteSwipe(Long id) {
+    @Transactional
+    public void rewindSwipe(Long id) {
+        boolean isLike = swipesRepository
+            .findById(id)
+            .orElseThrow(() -> new NotFoundException("Swipe not found: " + id))
+            .getType()
+            .isLike();
+
+        if (!isLike) {
+            throw new BadRequestException("Cannot rewind a swipe which isn't a like");
+        }
+
         swipesRepository.deleteById(id);
     }
-}
 
+    @Transactional
+    public void deleteByUserId(Long userId) {
+        swipesRepository.deleteAllBySourceIdOrTargetId(userId, userId);
+        matchService.deleteByUserId(userId);
+    }
+}

@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import es.upm.fi.love2day.dto.CreateAccountRequest;
 import es.upm.fi.love2day.events.VerificationResolvedEvent;
 import es.upm.fi.love2day.exceptions.ConflictException;
 import es.upm.fi.love2day.exceptions.NotFoundException;
@@ -12,60 +13,52 @@ import es.upm.fi.love2day.exceptions.NotFoundException;
 import es.upm.fi.love2day.repository.AccountsRepository;
 
 import es.upm.fi.love2day.model.Account;
-import es.upm.fi.love2day.model.VerificationInquiry;
-import es.upm.fi.love2day.model.VerificationStatus;
 
 @Service
 public class AccountService {
     private final AccountsRepository accountsRepository;
 
     private final VerificationService verificationService;
+    private final SwipeService swipeService;
+    private final ProfileService profileService;
 
     private final BCryptPasswordEncoder passwordEncoder;
 
     public AccountService(
         AccountsRepository repository,
-        VerificationService verificationService
+        VerificationService verificationService,
+        SwipeService swipeService,
+        ProfileService profileService
     ) {
         this.accountsRepository = repository;
+
         this.verificationService = verificationService;
+        this.swipeService = swipeService;
+        this.profileService = profileService;
+
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     @Transactional
-    public Account createAccount(String username, String email, String passwordRaw) {
-        if (accountsRepository.existsByUsername(username)) {
+    public Account createAccount(CreateAccountRequest request) {
+        if (accountsRepository.existsByUsername(request.username())) {
             throw new ConflictException("Username already taken");
         }
-        if (accountsRepository.existsByEmail(email)) {
+        if (accountsRepository.existsByEmail(request.email())) {
             throw new ConflictException("Email already registered");
         }
 
         Account account = Account.create(
-            username,
-            email,
-            passwordEncoder.encode(passwordRaw)
+            request.username(),
+            request.email(),
+            passwordEncoder.encode(request.password())
         );
 
-        return accountsRepository.save(account);
-    }
+        accountsRepository.save(account);
 
-    @Transactional
-    public VerificationInquiry startVerification(Long userId) {
-        if (!accountsRepository.existsById(userId)) {
-            throw new NotFoundException("Account not found: " + userId);
-        }
+        profileService.createProfile(account.getId());
 
-        return verificationService.startVerification(userId);
-    }
-
-    @Transactional(readOnly = true)
-    public VerificationStatus getVerificationStatus(Long userId) {
-        if (!accountsRepository.existsById(userId)) {
-            throw new NotFoundException("Account not found: " + userId);
-        }
-
-        return verificationService.getVerificationStatus(userId);
+        return account;
     }
 
     @Transactional
@@ -87,8 +80,10 @@ public class AccountService {
         accountsRepository.delete(account);
 
         // Se borran en cascada objetos dependientes
-        verificationService.deleteById(userId);
-        // TODO: faltan profile, swipes, match, chat, messages...
+        verificationService.deleteByUserId(userId);
+        swipeService.deleteByUserId(userId);
+        profileService.deleteByUserId(userId);
+        // TODO: faltan chat, messages
     }
 
     @EventListener

@@ -2,6 +2,8 @@ package es.upm.fi.love2day.service;
 
 import es.upm.fi.love2day.interfaces.Verifier;
 import es.upm.fi.love2day.model.VerificationInquiry;
+
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -12,7 +14,7 @@ public class DummyVerifier implements Verifier {
     // como no atraviesa el proxy de SpringBoot, sería síncrona.
     private final DummyVerifierAsyncHelper asyncHelper;
 
-    public DummyVerifier(DummyVerifierAsyncHelper asyncHelper) {
+    public DummyVerifier(@Lazy DummyVerifierAsyncHelper asyncHelper) {
         this.asyncHelper = asyncHelper;
     }
 

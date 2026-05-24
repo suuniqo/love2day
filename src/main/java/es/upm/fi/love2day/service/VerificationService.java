@@ -77,7 +77,7 @@ public class VerificationService {
     }
 
     @Transactional
-    public void deleteById(Long userId) {
+    public void deleteByUserId(Long userId) {
         verificationsRepository.deleteById(userId);
     }
 }

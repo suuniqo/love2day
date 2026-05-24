@@ -1,10 +1,10 @@
 package es.upm.fi.love2day.dto;
 
-public record MatchDto
-(
-    Long id,
-    Long userId1,
-    Long userId2,
-    LocalDateTime matchedAt,
-) {}
+import java.time.Instant;
 
+public record MatchDto(
+    Long id,
+    Long user1Id,
+    Long user2Id,
+    Instant createdAt
+) {}

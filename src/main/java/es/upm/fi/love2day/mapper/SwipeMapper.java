@@ -1,11 +1,10 @@
-package es.upm.fi.love2day.mappers;
-import es.upm.fi.love2day.dtos.SwipeDto;
+package es.upm.fi.love2day.mapper;
+import es.upm.fi.love2day.dto.SwipeDto;
+import es.upm.fi.love2day.model.Swipe;
 
-import java.util.List;
+import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface SwipeMapper {
     SwipeDto toDto(Swipe swipe);
-    List<SwipeDto> toDtoList(List<Swipe> swipes);
-//TODO: Tenemos que hacer algo con preferences
 }

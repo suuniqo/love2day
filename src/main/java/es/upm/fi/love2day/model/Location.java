@@ -5,13 +5,13 @@ import jakarta.persistence.Embeddable;
 
 @Embeddable
 public class Location {
-    @Column(nullable = false)
+    @Column
     private double latitude;
 
-    @Column(nullable = false)
+    @Column
     private double longitude;
 
-    @Column(nullable = false)
+    @Column
     private String city;
 
     public Location() {}

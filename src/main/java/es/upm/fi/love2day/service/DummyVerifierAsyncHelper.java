@@ -26,6 +26,7 @@ public class DummyVerifierAsyncHelper {
         VerificationStatus result = new Random().nextBoolean()
             ? VerificationStatus.VERIFIED
             : VerificationStatus.REJECTED;
+
         verificationService.resolveVerification(userId, result);
     }
 }

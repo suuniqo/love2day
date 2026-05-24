@@ -1,13 +1,9 @@
 package es.upm.fi.love2day.dto;
 
-import java.time.Instant;
-
 import es.upm.fi.love2day.model.SwipeType;
 
-public record SwipeDto (
-    Long id,
+public record CreateSwipeDto(
     Long sourceId,
     Long targetId,
-    SwipeType type,
-    Instant createdAt
+    SwipeType type
 ) {}

@@ -6,13 +6,14 @@ import es.upm.fi.love2day.model.Gender;
 import es.upm.fi.love2day.model.Location;
 import es.upm.fi.love2day.model.Orientation;
 
-public record ProfileDto (
-    Long userId,
+public record UpdateProfileRequest(
     String displayName,
     Gender gender,
     Orientation orientation,
     Location location,
     LocalDate birthDate,
-    String bio
+    String bio,
+    Integer minAge,
+    Integer maxAge,
+    Integer maxDistanceKm
 ) {}
-

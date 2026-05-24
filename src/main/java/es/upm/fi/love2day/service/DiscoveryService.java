@@ -1,32 +1,53 @@
 package es.upm.fi.love2day.service;
 
-import java.util.Optional;
+import java.time.LocalDate;
 
-import es.upm.fi.love2day.repository.ProfilesRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import es.upm.fi.love2day.exceptions.NotFoundException;
+import es.upm.fi.love2day.model.Location;
+import es.upm.fi.love2day.model.Preferences;
+import es.upm.fi.love2day.model.Profile;
 
 @Service
 public class DiscoveryService {
-    private final DiscoveryRepository discoveryRepository;
+    private final ProfileService profileService;
 
-    public DiscoveryService(DiscoveryRepository repository) {
-        this.discoveryRepository = repository;
-    }
-/* No creo que sea necesario, no hay model
-    public Optional<Profile> findById(Long id) {
-        return discoveryRepository.findById(id);
-    }
-*/
-    //TODO: Tiene que enviar una lista de preferencias?
-    //El id es es el del perfil, pues un perfil tiene solo unas preferencias?
-    //Como hacemos que comunique con el profileRESTController?
-    public List<Preferences> findPreferences(Long sourceId) {
-        return discoveryRepository.findPreferences(sourceId);
+    public DiscoveryService(ProfileService profileService) {
+        this.profileService = profileService;
     }
 
-    //TODO:Deberíamos poner setters? O un método updateProfile?
+    @Transactional(readOnly = true)
+    public Page<Profile> getDiscovery(Long userId, Pageable pageable) {
+        Profile profile = profileService
+            .getProfile(userId)
+            .orElseThrow(() -> new NotFoundException("Profile not found: " + userId));
 
-    public void deleteSwipe(Long id) {
-        swipesRepository.deleteById(id);
+        Preferences prefs = profile.getPreferences();
+        Location location = profile.getLocation();
+
+        LocalDate minAge = prefs.getMaxAge() != null
+            ? LocalDate.now().minusYears(prefs.getMaxAge())
+            : null;
+
+        LocalDate maxAge = prefs.getMinAge() != null
+            ? LocalDate.now().minusYears(prefs.getMinAge())
+            : null;
+
+        Double lat = location != null ? location.getLatitude() : null;
+        Double lon = location != null ? location.getLongitude() : null;
+
+        return profileService.findByPreferences(
+            userId,
+            minAge,
+            maxAge,
+            lat,
+            lon,
+            prefs.getMaxDistanceKm(),
+            pageable
+        );
     }
 }
-

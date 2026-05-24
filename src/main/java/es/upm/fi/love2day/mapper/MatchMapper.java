@@ -1,11 +1,11 @@
-package es.upm.fi.love2day.mappers;
-import es.upm.fi.love2day.dtos.MatchDto;
+package es.upm.fi.love2day.mapper;
 
-import java.util.List;
+import org.mapstruct.Mapper;
 
-//TODO: Ver si implementar nuestros mappers o utilizamos las funciones de service y con estos los convertimos
+import es.upm.fi.love2day.dto.MatchDto;
+import es.upm.fi.love2day.model.Match;
+
 @Mapper(componentModel = "spring")
 public interface MatchMapper {
     MatchDto toDto(Match match);
-    List<MatchDto> toDtoList(List<Match> matches);
 }
