@@ -31,7 +31,7 @@ public class ChatService {
         chatsRepository.deleteById(id);
     }
 
-    public void actualizarUltimoMensaje(Long matchId, Mensaje message) {
+    public void updateLastMessage(Long matchId, Message message) {
        chatsRepository.save(matchId, message);
     }
 

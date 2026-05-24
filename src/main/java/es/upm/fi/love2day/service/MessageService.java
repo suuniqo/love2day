@@ -35,7 +35,7 @@ public class MessageService {
             .findById(id)
             .orElseThrow(() -> new RuntimeException("Message not found"));
 
-        mensaje.setStatus(status); 
+        message.setStatus(status); 
     }
 
     public void deleteMessage(Long id) {
@@ -48,7 +48,7 @@ public class MessageService {
 
     public Message sendMessage(Long senderId, Long receptorId, Long matchId, String mediaKind, String content) {
         Message message = Message.create(senderId, matchId, mediaKind, content);
-        chatService.updateMessage(matchId, message);
+        chatService.updateLastMessage(matchId, message);
 
         message = messagesRepository.save(message);
         notifyNewMessage(receptorId, matchId);
