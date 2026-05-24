@@ -2,7 +2,8 @@ package es.upm.fi.love2day.service;
 
 import java.util.Optional;
 
-import es.upm.fi.love2day.model.Document;
+import org.springframework.stereotype.Service;
+
 import es.upm.fi.love2day.model.Chat;
 import es.upm.fi.love2day.repository.ChatsRepository;
 
@@ -14,10 +15,10 @@ public class ChatService {
         this.chatsRepository = repository;
     }
 
-    public Chat createChat(Long chatId, Long matchId, Acount user) {
-        Chat Chat = new Chat(chatId, matchId, user);
+    public Chat createChat(Long matchId) {
+        Chat chat = Chat.create(matchId);
 
-        return chatsRepository.save(Chat);
+        return chatsRepository.save(chat);
     }
 
     public Optional<Chat> findById(Long id) {
@@ -27,6 +28,4 @@ public class ChatService {
     public void deleteChat(Long id) {
         chatsRepository.deleteById(id);
     }
-
-    //TODO:¿No tiene más?
 }

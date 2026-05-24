@@ -1,7 +1,12 @@
 package es.upm.fi.love2day.model;
 
 public enum VerificationStatus {
-    NOT_VERIFIED,
+    UNVERIFIED,
     PENDING,
     VERIFIED,
+    REJECTED;
+
+    public boolean isVerified() {
+        return this == VERIFIED;
+    }
 }
