@@ -1,7 +1,7 @@
 public record ChatDto
 (
-    Long matchId;
-    Instant createdAt;
-    boolean isActive;
+    Long matchId,
+    Instant createdAt,
+    boolean isActive,
 ) {}
 

@@ -28,4 +28,24 @@ public class ChatService {
     public void deleteChat(Long id) {
         chatsRepository.deleteById(id);
     }
+
+    public List<Message> getMessages(Long matchId) {
+        Optional<Chat> chatOpt = chatsRepository.findByMatchId(matchId);
+        if (chatOpt.isEmpty()) {
+            throw new RuntimeException("Chat not found for matchId: " + matchId);
+        }
+        return chatOpt.get().getMessages();
+    }
+
+    public Message sendMessage(Long matchId, Long senderId, String content) {
+        Optional<Chat> chatOpt = chatsRepository.findByMatchId(matchId);
+        if (chatOpt.isEmpty()) {
+            throw new RuntimeException("Chat not found for matchId: " + matchId);
+        }
+        Chat chat = chatOpt.get();
+        Message message = Message.create(senderId, content);
+        chat.addMessage(message);
+        chatsRepository.save(chat);
+        return message;
+    }
 }

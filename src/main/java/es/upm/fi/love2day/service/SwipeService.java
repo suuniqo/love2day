@@ -5,25 +5,38 @@ import java.util.Optional;
 import es.upm.fi.love2day.repository.ProfilesRepository;
 
 @Service
-public class DiscoveryService {
-    private final DiscoveryRepository discoveryRepository;
+public class SwipeService {
+    private final SwipeRepository swipesRepository;
 
-    public DiscoveryService(DiscoveryRepository repository) {
-        this.discoveryRepository = repository;
-    }
-/* No creo que sea necesario, no hay model
-    public Optional<Profile> findById(Long id) {
-        return discoveryRepository.findById(id);
-    }
-*/
-    //TODO: Tiene que enviar una lista de preferencias?
-    //El id es es el del perfil, pues un perfil tiene solo unas preferencias?
-    //Como hacemos que comunique con el profileRESTController?
-    public List<Preferences> findPreferences(Long sourceId) {
-        return discoveryRepository.findPreferences(sourceId);
+    public SwipeService(SwipeRepository repository) {
+        this.swipesRepository = repository;
     }
 
-    //TODO:Deberíamos poner setters? O un método updateProfile?
+    @Transactional
+    public Swipe createSwipe(String username, String email, String passwordRaw) {
+        if (swipesRepository.existsByUsername(username)) {
+            throw new ConflictException("Username already taken");
+        }
+        if (swipesRepository.existsByEmail(email)) {
+            throw new ConflictException("Email already registered");
+        }
+
+        Swipe swipe = Swipe.create(
+            username,
+            email,
+            passwordEncoder.encode(passwordRaw)
+        );
+
+        return swipesRepository.save(swipe);
+    }
+
+    public Optional<Swipe> findById(Long id) {
+        return swipesRepository.findById(id);
+    }
+
+    public Optional<Swipe> findByUserId(Long id) {
+        return swipesRepository.findByUserId(id);
+    }
 
     public void deleteSwipe(Long id) {
         swipesRepository.deleteById(id);
