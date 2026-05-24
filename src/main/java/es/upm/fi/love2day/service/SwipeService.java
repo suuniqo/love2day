@@ -1,8 +1,10 @@
 package es.upm.fi.love2day.service;
 
 import java.util.Optional;
+import org.springframework.stereotype.Service;
 
 import es.upm.fi.love2day.repository.ProfilesRepository;
+import es.upm.fi.love2day.repository.SwipesRepository;
 
 @Service
 public class SwipeService {

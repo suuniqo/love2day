@@ -1,12 +1,10 @@
-package es.upm.fi.love2day.service;
+package es.upm.fi.love2day.model;
 
-import java.util.Optional;
-
-import es.upm.fi.love2day.repository.ProfilesRepository;
+import org.springframework.stereotype.Service;
 
 @Service
-public class SwipeService {
-    private final SwipeRepository swipesRepository;
+public class Swipe {
+    /* private final SwipeRepository swipesRepository;
 
     public SwipeService(SwipeRepository repository) {
         this.swipesRepository = repository;
@@ -17,7 +15,7 @@ public class SwipeService {
         Swipe swipe = Swipe.create(sourceId, targetId, type);
         return swipesRepository.save(swipe);
     }
-ç
+
     public Optional<Swipe> findById(Long id) {
         return swipesRepository.findById(id);
     }
@@ -28,6 +26,6 @@ public class SwipeService {
 
     public void deleteSwipe(Long id) {
         swipesRepository.deleteById(id);
-    }
+    } */
 }
 

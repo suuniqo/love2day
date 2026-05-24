@@ -1,11 +1,13 @@
 package es.upm.fi.love2day.service;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import es.upm.fi.love2day.model.Chat;
 import es.upm.fi.love2day.repository.ChatsRepository;
+import es.upm.fi.love2day.model.Message;
 
 @Service
 public class ChatService {
