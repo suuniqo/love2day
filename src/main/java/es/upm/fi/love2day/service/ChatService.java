@@ -27,14 +27,9 @@ public class ChatService {
         return chatsRepository.findById(id);
     }
 
-    public void deleteChat(Long id) {
-        chatsRepository.deleteById(id);
-    }
-
     public void updateLastMessage(Long matchId, Message message) {
        chatsRepository.save(matchId, message);
     }
-
 
     //TODO: Deberiand de estar?
     public List<Message> getMessages(Long matchId) {
@@ -55,5 +50,9 @@ public class ChatService {
         chat.addMessage(message);
         chatsRepository.save(chat);
         return message;
+    }
+
+    public void deleteByMatchId(Long matchId) {
+        chatsRepository.deleteById(matchId);
     }
 }

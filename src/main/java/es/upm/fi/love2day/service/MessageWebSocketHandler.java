@@ -34,7 +34,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
 
         try {
             session.sendMessage(new TextMessage(
-                "{\"type\":\"NEW_MESSAGE\",\"chatId\":" + matchId + "}"
+                "{\"type\":\"NEW_MESSAGE\",\"matchId\":" + matchId + "}"
             ));
         } catch (IOException e) {
             sessions.remove(userId);

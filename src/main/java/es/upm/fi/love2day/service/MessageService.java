@@ -1,11 +1,12 @@
 package es.upm.fi.love2day.service;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
+
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import es.upm.fi.love2day.exceptions.NotFoundException;
+import es.upm.fi.love2day.exceptions.BadRequestException;
 import es.upm.fi.love2day.model.Message;
 import es.upm.fi.love2day.model.MessageStatus;
 import es.upm.fi.love2day.repository.MessagesRepository;
@@ -14,46 +15,47 @@ import es.upm.fi.love2day.repository.MessagesRepository;
 public class MessageService {
     private final MessagesRepository messagesRepository;
     private final MatchService matchService;
+    private final MessageWebSocketHandler socketHandler;
 
-    public MessageService(MessagesRepository repository) {
+    public MessageService(
+        MessagesRepository repository,
+        MatchService matchService,
+        MessageWebSocketHandler socketHandler
+    ) {
         this.messagesRepository = repository;
+        this.matchService = matchService;
+        this.socketHandler = socketHandler;
     }
 
-    public Message createMessage(Long senderId, Long matchId, String mediaKind, String content) {
-        Message message = Message.create(senderId, matchId, mediaKind, content);
+    public Page<Message> getMesagges(Long matchId, Pageable pageable) {
+        Page<Message> messages = messagesRepository.findByMatchId(matchId, pageable);
 
-        return messagesRepository.save(message);
-    }
+        List<Message> unread = messages
+            .stream()
+            .filter(msg -> !msg.isRead())
+            .toList();
 
-    public Optional<Message> findById(Long id) {
-        return messagesRepository.findById(id);
-    }
+        unread.forEach(msg -> msg.markAsRead());
+        messagesRepository.saveAll(unread);
 
-    public void setEstado(Long id, MessageStatus status) {
-        Message message = messagesRepository
-            .findById(id)
-            .orElseThrow(() -> new NotFoundException("Message not found: " + id));
-
-        message.setStatus(status); 
+        return messages;
     }
 
     public void deleteMessage(Long id) {
         messagesRepository.deleteById(id);
     }
 
-    public Page<Message> getMesagges(Long matchId, Pageable pageable) {
-        return messagesRepository.findByMatchId(matchId, pageable);
-    }
-
     public Message sendMessage(Long senderId, Long matchId, String mediaKind, String content) {
         Message message = Message.create(senderId, matchId, mediaKind, content);
-
         messagesRepository.save(message);
 
-        notifyNewMessage(receptorId, matchId);
+        Long receiverId = matchService
+            .findOpposite(senderId, matchId)
+            .orElseThrow(() -> new BadRequestException("Match doesn't contain senderId: " + senderId));
+
+        socketHandler.notifyNewMessage(receiverId, matchId);
 
         message.setStatus(MessageStatus.DELIVERED);
-
         return messagesRepository.save(message);
     }
 }

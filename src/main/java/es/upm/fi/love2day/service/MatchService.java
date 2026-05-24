@@ -1,5 +1,7 @@
 package es.upm.fi.love2day.service;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,23 @@ public class MatchService {
     private boolean existsByUserIds(Long user1Id, Long user2Id) {
         return matchesRepository.existsByUser1IdAndUser2Id(user1Id, user2Id)
             || matchesRepository.existsByUser1IdAndUser2Id(user2Id, user1Id);
+    }
+
+    public Optional<Long> getOpposite(Long userId, Match match) {
+        if (match.getUser1Id() == userId) {
+            return Optional.of(match.getUser2Id());
+        }
+        if (match.getUser2Id() == userId) {
+            return Optional.of(match.getUser1Id());
+        }
+
+        return Optional.empty();
+    }
+
+    public Optional<Long> findOpposite(Long userId, Long matchId) {
+        return matchesRepository
+            .findById(matchId)
+            .flatMap(match -> getOpposite(userId, match));
     }
 
     @Transactional

@@ -102,4 +102,12 @@ public class Message {
     public void setStatus(MessageStatus status) {
         this.status = status;
     }
+
+    public boolean isRead() {
+        return this.status == MessageStatus.READ;
+    }
+
+    public void markAsRead() {
+        this.status = MessageStatus.READ;
+    }
 }
