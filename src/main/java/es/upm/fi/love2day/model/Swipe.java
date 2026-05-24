@@ -1,71 +1,31 @@
 package es.upm.fi.love2day.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
+import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-
-@Entity
-@Table(name = "Swipes")  
+@Service
 public class Swipe {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    /* private final SwipeRepository swipesRepository;
 
-    @Column(nullable = false)
-    private Long sourceId;
-
-    @Column(nullable = false)
-    private Long targetId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SwipeType type;
-
-    @Column(nullable = false)
-    private Instant createdAt;
-	
-	// necesario para JPA
-	public Swipe() {}
-
-    private Swipe(Long sourceId, Long targetId, SwipeType type, Instant createdAt) {
-        this.sourceId = sourceId;
-        this.targetId = targetId;
-        this.type = type;
-        this.createdAt = createdAt;
+    public SwipeService(SwipeRepository repository) {
+        this.swipesRepository = repository;
     }
 
-    public Swipe create(Long sourceId, Long targetId, SwipeType type) {
-        return new Swipe(sourceId, targetId, type, Instant.now());
+    @Transactional
+    public Swipe createSwipe(Long sourceId, Long targetId, SwipeType type) {
+        Swipe swipe = Swipe.create(sourceId, targetId, type);
+        return swipesRepository.save(swipe);
     }
 
-    public Long getId() {
-        return id;
+    public Optional<Swipe> findById(Long id) {
+        return swipesRepository.findById(id);
     }
 
-    public Long getSourceId() {
-        return sourceId;
+    public Optional<Swipe> findByUserId(Long id) {
+        return swipesRepository.findByUserId(id);
     }
 
-    public Long getTargetId() {
-        return targetId;
-    }
-
-    public SwipeType getType() {
-        return type;
-    }
-
-    public void setType(SwipeType type) {
-        this.type = type;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    public void deleteSwipe(Long id) {
+        swipesRepository.deleteById(id);
+    } */
 }
+

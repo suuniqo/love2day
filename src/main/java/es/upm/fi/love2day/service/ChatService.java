@@ -1,10 +1,13 @@
 package es.upm.fi.love2day.service;
 
 import java.util.Optional;
+import java.util.List;
 
-import es.upm.fi.love2day.model.Document;
+import org.springframework.stereotype.Service;
+
 import es.upm.fi.love2day.model.Chat;
 import es.upm.fi.love2day.repository.ChatsRepository;
+import es.upm.fi.love2day.model.Message;
 
 @Service
 public class ChatService {
@@ -14,9 +17,10 @@ public class ChatService {
         this.chatsRepository = repository;
     }
 
-    public Chat createChat(Long chatId, Long matchId, Acount user) {
-        Chat Chat = new Chat(chatId, matchId, user);
-        return chatsRepository.save(Chat);
+    public Chat createChat(Long matchId) {
+        Chat chat = Chat.create(matchId);
+
+        return chatsRepository.save(chat);
     }
 
     public Optional<Chat> findById(Long id) {
@@ -32,4 +36,24 @@ public class ChatService {
     }
 
 
+    //TODO: Deberiand de estar?
+    public List<Message> getMessages(Long matchId) {
+        Optional<Chat> chatOpt = chatsRepository.findByMatchId(matchId);
+        if (chatOpt.isEmpty()) {
+            throw new RuntimeException("Chat not found for matchId: " + matchId);
+        }
+        return chatOpt.get().getMessages();
+    }
+
+    public Message sendMessage(Long matchId, Long senderId, String content) {
+        Optional<Chat> chatOpt = chatsRepository.findByMatchId(matchId);
+        if (chatOpt.isEmpty()) {
+            throw new RuntimeException("Chat not found for matchId: " + matchId);
+        }
+        Chat chat = chatOpt.get();
+        Message message = Message.create(senderId, content);
+        chat.addMessage(message);
+        chatsRepository.save(chat);
+        return message;
+    }
 }

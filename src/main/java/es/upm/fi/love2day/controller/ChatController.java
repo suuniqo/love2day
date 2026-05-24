@@ -44,4 +44,25 @@ public class ChatController {
         return mensajeService.enviarMensaje(content, type);
     }
     
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ChatDto createChat(@RequestBody CreateChatDto request) {
+        Chat chat = chatService.createChat(
+            request.matchid()
+        );
+
+        return chatMapper.toDto(chat);
+    }
+
+    @DeleteMapping("/{matchId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteChat(@PathVariable Long matchId) {
+        chatService.deleteChat(matchId);
+    }
+
+    //TODO:Qué pongo aquí?
+    @GetMapping("/{matchId}/messages")
+    public List<MessageDto> getMessages(@PathVariable Long matchId) {
+        return messageMapper.toDtoList(chatService.getMessages(matchId));
+    }
 }

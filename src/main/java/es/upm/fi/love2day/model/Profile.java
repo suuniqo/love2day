@@ -59,7 +59,7 @@ public class Profile {
         this.preferences = preferences;
     }
     
-    public Profile create(
+    public static Profile create(
         Long userId,
         String displayName,
         Gender gender,

@@ -1,12 +1,13 @@
 package es.upm.fi.love2day.repository;
 
+import es.upm.fi.love2day.model.Profile;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import es.upm.fi.love2day.model.Verification;
-
+//TODO:Qué ponemos en el extends?
 @Repository
-public interface VerificationsRepository extends JpaRepository<Verification, Long> {
+public interface DiscoveryRepository extends JpaRepository<Profile, Long> {
     // Spring Data JPA auto-implements these from the method name:
     // Optional<Account> findByUsername(String username);
     // Optional<Account> findByEmail(String email);
@@ -14,3 +15,4 @@ public interface VerificationsRepository extends JpaRepository<Verification, Lon
     // boolean existsByEmail(String email);
     // Optional<Account> findByUsernameOrEmail(String username, String email);
 }
+
