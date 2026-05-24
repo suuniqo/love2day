@@ -13,8 +13,16 @@ Al haber diseñado una arquitectura inicialmente orientada a microservicios, la 
 Sin embargo, dada la limitación de tiempo y el alcance actual de la evaluación, se ha optado por implementar todos los dominios dentro del mismo proyecto. Los distintos servicios mantienen una estricta separación lógica y se comunican internamente mediante llamadas a métodos. Este enfoque emula la separación de responsabilidades de los microservicios y se alinea con lo que técnicamente se conoce como una **monolito modular**.
 
 
+
+---
+
+## ## 🏗️ Decisiones de Infraestructura y Comunicación
+
 La integración con proveedores externos de infraestructura (como el `VerificationService` para la validación de identidad) ha sido completamente simulada (*mocked*). En caso de una implementación futura, bastará con modificar la clase que implementa dicha interfaz sin alterar el dominio. 
+
 Por otro lado, como se muestra en el diagrama de secuencia de *Recibir mensaje*, para la comunicación asíncrona entre el backend y la interfaz de usuario se ha optado por **WebSockets** (representado en el flujo a través del bloque `ServidorMensajeria`). Esta decisión se debe a que introducir un broker de eventos habría añadido una complejidad innecesaria al proyecto. La arquitectura de WebSockets está plenamente implementada para enviar la señal `notificarNuevoMensaje(chatId)` en tiempo real a la UI.
+
+
 
 ---
 
