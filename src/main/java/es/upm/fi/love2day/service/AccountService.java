@@ -81,9 +81,8 @@ public class AccountService {
 
         // Se borran en cascada objetos dependientes
         verificationService.deleteByUserId(userId);
-        swipeService.deleteByUserId(userId);
         profileService.deleteByUserId(userId);
-        // TODO: faltan chat, messages
+        swipeService.deleteByUserId(userId);
     }
 
     @EventListener
