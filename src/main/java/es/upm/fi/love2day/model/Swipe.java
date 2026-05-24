@@ -41,7 +41,7 @@ public class Swipe {
         this.createdAt = createdAt;
     }
 
-    public Swipe create(Long sourceId, Long targetId, SwipeType type) {
+    public static Swipe create(Long sourceId, Long targetId, SwipeType type) {
         return new Swipe(sourceId, targetId, type, Instant.now());
     }
 

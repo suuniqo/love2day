@@ -13,6 +13,9 @@ public class Verification {
 	@Id
 	private Long userId;
 
+    @Column(nullable = false)
+    private VerificationInquiry inquiry;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private VerificationStatus status;
@@ -20,17 +23,22 @@ public class Verification {
     // necesario para JPA
 	public Verification() {}
 	
-	private Verification(Long userId, VerificationStatus status) {
+	private Verification(Long userId, VerificationInquiry inquiry, VerificationStatus status) {
         this.userId = userId;
+        this.inquiry = inquiry;
         this.status = status;
     }
 
-	public Verification create(Long userId, VerificationStatus status) {
-        return new Verification(userId, status);
+	public static Verification create(Long userId, VerificationInquiry inquiry) {
+        return new Verification(userId, inquiry, VerificationStatus.PENDING);
     }
 
     public Long getUserId() {
         return userId;
+    }
+
+    public VerificationInquiry getInquiry() {
+        return inquiry;
     }
 
     public VerificationStatus getStatus() {

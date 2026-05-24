@@ -4,5 +4,7 @@ public enum Gender {
     MAN,
     WOMAN,
     NON_BINARY,
-    OTHER
+    GENDERFLUID,
+    QUEER,
+    OTHER,
 }

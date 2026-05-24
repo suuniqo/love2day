@@ -2,8 +2,10 @@ package es.upm.fi.love2day.service;
 
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import es.upm.fi.love2day.model.Message;
-import es.upm.fi.love2day.model.Document;
+import es.upm.fi.love2day.model.MessageStatus;
 import es.upm.fi.love2day.repository.MessagesRepository;
 
 @Service
@@ -14,22 +16,18 @@ public class MessageService {
         this.messagesRepository = repository;
     }
 
-    public Message createMessage(Long id, Long senderId, String content, MediaType type) {
-        Message Message = new Message(id, senderId, content, type);
+    public Message createMessage(Long senderId, Long matchId, String mediaKind, String content) {
+        Message message = Message.create(senderId, matchId, mediaKind, content);
 
-        return messagesRepository.save(Message);
+        return messagesRepository.save(message);
     }
 
     public Optional<Message> findById(Long id) {
         return messagesRepository.findById(id);
     }
 
-    public Optional<Message> findByChatId(Long chatId) {
-        return messagesRepository.findByChatId(chatId);
-    }
-
     public void setEstado(Long id, MessageStatus status) {
-        Message Message = messagesRepository
+        Message message = messagesRepository
             .findById(id)
             .orElseThrow(() -> new RuntimeException("Message not found"));
 

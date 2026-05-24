@@ -5,6 +5,8 @@ public enum Orientation {
     GAY,
     LESBIAN,
     BISEXUAL,
+    PANSEXUAL,
     ASEXUAL,
+    POLYAMOROUS,
     OTHER,
 }
