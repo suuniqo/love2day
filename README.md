@@ -16,7 +16,7 @@ Sin embargo, dada la limitación de tiempo y el alcance actual de la evaluación
 
 ---
 
-## ## 🏗️ Decisiones de Infraestructura y Comunicación
+##  🏗️ Decisiones de Infraestructura y Comunicación
 
 La integración con proveedores externos de infraestructura (como el `VerificationService` para la validación de identidad) ha sido completamente simulada (*mocked*). En caso de una implementación futura, bastará con modificar la clase que implementa dicha interfaz sin alterar el dominio. 
 
