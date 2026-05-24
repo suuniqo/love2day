@@ -19,7 +19,6 @@ import es.upm.fi.love2day.service.ProfileService;
 @RestController
 @RequestMapping("/profile")
 public class ProfileController {
-
     private final ProfileService profileService;
     private final ProfileMapper profileMapper;
 

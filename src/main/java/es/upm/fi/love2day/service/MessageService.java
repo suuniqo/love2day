@@ -1,8 +1,10 @@
 package es.upm.fi.love2day.service;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -19,7 +21,7 @@ public class MessageService {
 
     public MessageService(
         MessagesRepository repository,
-        MatchService matchService,
+        @Lazy MatchService matchService,
         MessageWebSocketHandler socketHandler
     ) {
         this.messagesRepository = repository;
@@ -27,6 +29,7 @@ public class MessageService {
         this.socketHandler = socketHandler;
     }
 
+    @Transactional
     public Page<Message> getMesagges(Long matchId, Pageable pageable) {
         Page<Message> messages = messagesRepository.findByMatchId(matchId, pageable);
 
@@ -41,10 +44,12 @@ public class MessageService {
         return messages;
     }
 
+    @Transactional
     public void deleteMessage(Long id) {
         messagesRepository.deleteById(id);
     }
 
+    @Transactional
     public Message sendMessage(Long senderId, Long matchId, String mediaKind, String content) {
         Message message = Message.create(senderId, matchId, mediaKind, content);
         messagesRepository.save(message);
@@ -57,5 +62,10 @@ public class MessageService {
 
         message.setStatus(MessageStatus.DELIVERED);
         return messagesRepository.save(message);
+    }
+
+    @Transactional
+    public void deleteByMatchIds(List<Long> matchId) {
+        messagesRepository.deleteAllByMatchIdIn(matchId);
     }
 }
