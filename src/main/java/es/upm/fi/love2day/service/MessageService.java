@@ -2,10 +2,10 @@ package es.upm.fi.love2day.service;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import es.upm.fi.love2day.exceptions.NotFoundException;
 import es.upm.fi.love2day.model.Message;
 import es.upm.fi.love2day.model.MessageStatus;
 import es.upm.fi.love2day.repository.MessagesRepository;
@@ -13,11 +13,10 @@ import es.upm.fi.love2day.repository.MessagesRepository;
 @Service
 public class MessageService {
     private final MessagesRepository messagesRepository;
-    private final ChatService chatService;
+    private final MatchService matchService;
 
-    public MessageService(MessagesRepository repository, ChatService chat) {
+    public MessageService(MessagesRepository repository) {
         this.messagesRepository = repository;
-        this.chatService = chat;
     }
 
     public Message createMessage(Long senderId, Long matchId, String mediaKind, String content) {
@@ -33,7 +32,7 @@ public class MessageService {
     public void setEstado(Long id, MessageStatus status) {
         Message message = messagesRepository
             .findById(id)
-            .orElseThrow(() -> new RuntimeException("Message not found"));
+            .orElseThrow(() -> new NotFoundException("Message not found: " + id));
 
         message.setStatus(status); 
     }
@@ -46,14 +45,15 @@ public class MessageService {
         return messagesRepository.findByMatchId(matchId, pageable);
     }
 
-    public Message sendMessage(Long senderId, Long receptorId, Long matchId, String mediaKind, String content) {
+    public Message sendMessage(Long senderId, Long matchId, String mediaKind, String content) {
         Message message = Message.create(senderId, matchId, mediaKind, content);
-        chatService.updateLastMessage(matchId, message);
 
-        message = messagesRepository.save(message);
+        messagesRepository.save(message);
+
         notifyNewMessage(receptorId, matchId);
 
         message.setStatus(MessageStatus.DELIVERED);
+
         return messagesRepository.save(message);
     }
 }

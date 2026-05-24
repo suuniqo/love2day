@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class MessageWebSocketHandler extends TextWebSocketHandler {
-
     private final Map<Long, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
     @Override
@@ -26,8 +25,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
         extractUserId(session).ifPresent(sessions::remove);
     }
 
-    public void notifyNewMessage(Long userId, Long chatId) {
-
+    public void notifyNewMessage(Long userId, Long matchId) {
         WebSocketSession session = sessions.get(userId);
 
         if (session == null || !session.isOpen()) {
@@ -36,7 +34,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
 
         try {
             session.sendMessage(new TextMessage(
-                "{\"type\":\"NEW_MESSAGE\",\"chatId\":" + chatId + "}"
+                "{\"type\":\"NEW_MESSAGE\",\"chatId\":" + matchId + "}"
             ));
         } catch (IOException e) {
             sessions.remove(userId);
@@ -46,7 +44,9 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     private Optional<Long> extractUserId(WebSocketSession session) {
         String query = session.getUri().getQuery();
 
-        if (query == null) return Optional.empty();
+        if (query == null) {
+            return Optional.empty();
+        }
 
         try {
             return Optional.of(Long.parseLong(query.replace("userId=", "")));
