@@ -14,6 +14,9 @@ Sin embargo, dada la limitación de tiempo y el alcance actual de la evaluación
 
 Por otro lado, la integración con servicios externos de verificación y mensajería ha sido simulada (*mocked*). Al carecer de acceso a proveedores reales, se han definido interfaces claras y se han implementado clases *dummy* (como dependencias simuladas) que emulan la respuesta de estos sistemas externos, manteniendo el núcleo de la aplicación funcional e independiente.
 
+La integración con proveedores externos de infraestructura (como el `VerificationService` para la validación de identidad) ha sido completamente simulada (*mocked*). En caso de una implementación futura, bastará con modificar la clase que implementa dicha interfaz sin alterar el dominio. 
+Por otro lado, como se muestra en el diagrama de secuencia de *Recibir mensaje*, para la comunicación asíncrona entre el backend y la interfaz de usuario se ha optado por **WebSockets** (representado en el flujo a través del bloque `ServidorMensajeria`). Esta decisión se debe a que introducir un broker de eventos habría añadido una complejidad innecesaria al proyecto. La arquitectura de WebSockets está plenamente implementada para enviar la señal `notificarNuevoMensaje(chatId)` en tiempo real a la UI.
+
 ---
 
 ## 📦 Componentes del Sistema (Microservicios Lógicos)
@@ -25,7 +28,7 @@ El ecosistema de la aplicación se divide en 6 servicios principales, cada uno e
 | **Account Service** | Gestión de Identidad y Seguridad | Manejo de identificadores únicos, credenciales base y comunicación con el servicio externo (simulado) para la verificación de identidad de la cuenta. |
 | **Profile Service** | Gestión de Perfiles | Administración de la información pública del usuario: edición de datos personales, fotos, biografía y preferencias de búsqueda. |
 | **Discovery Service** | Motor de Recomendación | Filtrado de usuarios potenciales basados en la ubicación, edad y preferencias definidas en el perfil. |
-| **Swipe Service** | Registro de Interacciones | Procesamiento de las acciones del usuario (likes, dislikes o superlikes) de forma eficiente. |
+| **Swipe Service** | Registro de Interacciones | Procesamiento de las acciones del usuario (likes o dislikes) de forma eficiente. |
 | **Match Service** | Lógica de Emparejamiento | Comprobación en tiempo real de la reciprocidad de interacciones entre dos usuarios para generar un "Match". |
 | **Chat Service** | Mensajería | Gestión del canal de comunicación privado, historial de mensajes y estado de la conversación entre perfiles emparejados. |
 
