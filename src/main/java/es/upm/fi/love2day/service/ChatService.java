@@ -16,7 +16,6 @@ public class ChatService {
 
     public Chat createChat(Long chatId, Long matchId, Acount user) {
         Chat Chat = new Chat(chatId, matchId, user);
-
         return chatsRepository.save(Chat);
     }
 
@@ -28,5 +27,9 @@ public class ChatService {
         chatsRepository.deleteById(id);
     }
 
-    //TODO:¿No tiene más?
+    public void actualizarUltimoMensaje(Long matchId, Mensaje message) {
+       chatsRepository.save(matchId, message);
+    }
+
+
 }
