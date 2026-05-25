@@ -49,8 +49,9 @@ public class Message {
         MessageStatus status
     ) {
         this.senderId = senderId;
-        this.content = content;
+        this.matchId = matchId;
         this.mediaKind = type;
+        this.content = content;
         this.createdAt = createdAt;
         this.status = status;
     }
@@ -95,7 +96,11 @@ public class Message {
         return createdAt;
     }
 
-    public MessageStatus getStatus() {
+    public MessageStatus getStatus(Long userId) {
+        if (userId == senderId) {
+            return MessageStatus.READ;
+        }
+
         return status;
     }
 
@@ -103,8 +108,8 @@ public class Message {
         this.status = status;
     }
 
-    public boolean isRead() {
-        return this.status == MessageStatus.READ;
+    public boolean isRead(Long userId) {
+        return getStatus(userId) == MessageStatus.READ;
     }
 
     public void markAsRead() {

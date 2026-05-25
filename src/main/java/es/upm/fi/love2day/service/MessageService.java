@@ -4,11 +4,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import es.upm.fi.love2day.exceptions.BadRequestException;
+import es.upm.fi.love2day.exceptions.NotFoundException;
 import es.upm.fi.love2day.model.Message;
 import es.upm.fi.love2day.model.MessageStatus;
 import es.upm.fi.love2day.repository.MessagesRepository;
@@ -16,26 +16,23 @@ import es.upm.fi.love2day.repository.MessagesRepository;
 @Service
 public class MessageService {
     private final MessagesRepository messagesRepository;
-    private final MatchService matchService;
     private final MessageWebSocketHandler socketHandler;
 
     public MessageService(
         MessagesRepository repository,
-        @Lazy MatchService matchService,
         MessageWebSocketHandler socketHandler
     ) {
         this.messagesRepository = repository;
-        this.matchService = matchService;
         this.socketHandler = socketHandler;
     }
 
     @Transactional
-    public Page<Message> getMesagges(Long matchId, Pageable pageable) {
+    public Page<Message> getMesagges(Long matchId, Long receiverId, Pageable pageable) {
         Page<Message> messages = messagesRepository.findByMatchId(matchId, pageable);
 
         List<Message> unread = messages
             .stream()
-            .filter(msg -> !msg.isRead())
+            .filter(msg -> !msg.isRead(receiverId))
             .toList();
 
         unread.forEach(msg -> msg.markAsRead());
@@ -45,18 +42,24 @@ public class MessageService {
     }
 
     @Transactional
-    public void deleteMessage(Long id) {
+    public void deleteMessage(Long id, Long userId) {
+        Message message = messagesRepository
+            .findById(id)
+            .orElseThrow(() -> new NotFoundException("Message not found: " + id));
+
+        if (message.getSenderId() != userId) {
+            throw new BadRequestException(
+                "Message can only be deleted by senderId " + message.getSenderId() + ": " + userId
+            );
+        }
+
         messagesRepository.deleteById(id);
     }
 
     @Transactional
-    public Message sendMessage(Long senderId, Long matchId, String mediaKind, String content) {
+    public Message sendMessage(Long senderId, Long receiverId, Long matchId, String mediaKind, String content) {
         Message message = Message.create(senderId, matchId, mediaKind, content);
         messagesRepository.save(message);
-
-        Long receiverId = matchService
-            .findOpposite(senderId, matchId)
-            .orElseThrow(() -> new BadRequestException("Match doesn't contain senderId: " + senderId));
 
         socketHandler.notifyNewMessage(receiverId, matchId);
 

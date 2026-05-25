@@ -49,6 +49,11 @@ public class MatchService {
             .flatMap(match -> getOpposite(userId, match));
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsMatch(Long id) {
+        return matchesRepository.existsById(id);
+    }
+
     @Transactional
     public Match createMatch(Long user1Id, Long user2Id) {
         if (existsByUserIds(user1Id, user2Id)) {

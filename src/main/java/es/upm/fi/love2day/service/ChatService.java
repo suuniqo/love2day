@@ -3,11 +3,13 @@ package es.upm.fi.love2day.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import es.upm.fi.love2day.exceptions.BadRequestException;
 import es.upm.fi.love2day.exceptions.NotFoundException;
 import es.upm.fi.love2day.model.Chat;
 import es.upm.fi.love2day.repository.ChatsRepository;
@@ -17,17 +19,24 @@ import es.upm.fi.love2day.model.Message;
 public class ChatService {
     private final ChatsRepository chatsRepository;
     private final MessageService messageService;
+    private final MatchService matchService;
 
     public ChatService(
         ChatsRepository repository,
-        MessageService messageService
+        MessageService messageService,
+        @Lazy MatchService matchService
     ) {
         this.chatsRepository = repository;
         this.messageService = messageService;
+        this.matchService = matchService;
     }
 
     @Transactional
     public Chat createChat(Long matchId) {
+        if (!matchService.existsMatch(matchId)) {
+            throw new NotFoundException("Match not found: " + matchId);
+        }
+
         Chat chat = Chat.create(matchId);
 
         return chatsRepository.save(chat);
@@ -39,12 +48,15 @@ public class ChatService {
     }
 
     @Transactional
-    public Page<Message> getMessages(Long matchId, Pageable pageable) {
+    public Page<Message> getMessages(Long matchId, Long receiverId, Pageable pageable) {
         if (!chatsRepository.existsById(matchId)) {
             throw new NotFoundException("Chat not found: " + matchId);
         }
+        if (matchService.findOpposite(receiverId, matchId).isEmpty()) {
+            throw new BadRequestException("Match doesn't contain receiverId: " + receiverId);
+        }
 
-        return messageService.getMesagges(matchId, pageable);
+        return messageService.getMesagges(matchId, receiverId, pageable);
     }
 
     @Transactional
@@ -53,11 +65,19 @@ public class ChatService {
             throw new NotFoundException("Chat not found: " + matchId);
         }
 
-        return messageService.sendMessage(senderId, matchId, mediaKind, content);
+        Long receiverId = matchService
+            .findOpposite(senderId, matchId)
+            .orElseThrow(() -> new BadRequestException("Match doesn't contain senderId: " + senderId));
+
+        return messageService.sendMessage(senderId, receiverId, matchId, mediaKind, content);
     }
 
     @Transactional
-    public void blockChat(Long matchId) {
+    public void blockChat(Long matchId, Long userId) {
+        if (matchService.findOpposite(userId, matchId).isEmpty()) {
+            throw new BadRequestException("Match doesn't contain userId: " + userId);
+        }
+
         Chat chat = chatsRepository
             .findById(matchId)
             .orElseThrow(() -> new NotFoundException("Chat not found: " + matchId));
@@ -67,8 +87,8 @@ public class ChatService {
     }
 
     @Transactional
-    public void deleteMessage(Long msgId) {
-        messageService.deleteMessage(msgId);
+    public void deleteMessage(Long msgId, Long userId) {
+        messageService.deleteMessage(msgId, userId);
     }
 
     @Transactional

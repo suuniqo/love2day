@@ -56,15 +56,16 @@ public class ChatController {
         return chatMapper.toDto(chat);
     }
 
-    @GetMapping("/{matchId}/msg")
+    @GetMapping("/{matchId}/msg/{userId}")
     public Page<MessageDto> getMessages(
         @PathVariable Long matchId,
+        @PathVariable Long userId,
         @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return chatService.getMessages(matchId, pageable).map(messageMapper::toDto);
+        return chatService.getMessages(matchId, userId, pageable).map(messageMapper::toDto);
     }
 
-    @PostMapping("/chats/{matchId}/msg/{userId}")
+    @PostMapping("/{matchId}/msg/{userId}")
     @ResponseStatus(HttpStatus.CREATED)
     public MessageDto sendMessage(
         @PathVariable Long matchId,
@@ -76,15 +77,19 @@ public class ChatController {
         );
     }
 
-    @PatchMapping("/{matchId}/block")
+    @PatchMapping("/{matchId}/block/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void blockChat(@PathVariable Long matchId) {
-        chatService.blockChat(matchId);
+    public void blockChat(@PathVariable Long matchId, @PathVariable Long userId) {
+        chatService.blockChat(matchId, userId);
     }
     
-    @DeleteMapping("/{msgId}")
+    @DeleteMapping("/{matchId}/msg/{userId}/delete/{msgId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteMessage(@PathVariable Long msgId) {
-        chatService.deleteMessage(msgId);
+    public void deleteMessage(
+        @PathVariable Long matchId,
+        @PathVariable Long userId,
+        @PathVariable Long msgId
+    ) {
+        chatService.deleteMessage(msgId, userId);
     }
 }
