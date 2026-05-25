@@ -4,31 +4,47 @@ El proyecto consiste en la implementación de una aplicación de citas estructur
 
 El objetivo principal de la aplicación es segmentar de manera limpia las distintas responsabilidades del dominio de negocio (gestión de perfiles, emparejamientos, interacciones y mensajería) en componentes autónomos para mantener firmes los principios de **alta cohesión** y **bajo acoplamiento**.
 
----
-
-## 🛠️ Limitaciones técnicas y Decisiones de Implementación
-
-Al haber diseñado una arquitectura inicialmente orientada a microservicios, la implementación distribuida estándar implicaría que cada servicio operase como un proyecto Java independiente, comunicándose a través de la red.
-
-Sin embargo, dada la limitación de tiempo y el alcance actual de la evaluación, se ha optado por implementar todos los dominios dentro del mismo proyecto. Los distintos servicios mantienen una estricta separación lógica y se comunican internamente mediante llamadas a métodos. Este enfoque emula la separación de responsabilidades de los microservicios y se alinea con lo que técnicamente se conoce como una **monolito modular**.
-
-
 
 ---
 
-##  📡 Decisiones de Infraestructura y Comunicación
+## Limitaciones técnicas y Decisiones de Implementación
 
-La integración con proveedores externos de infraestructura (como el `VerificationService` para la validación de identidad) ha sido completamente simulada (*mocked*). En caso de una implementación futura, bastará con modificar la clase que implementa dicha interfaz sin alterar el dominio. 
+Al haber diseñado una arquitectura inicialmente orientada a microservicios, la implementación distribuida estándar implicaría que cada servicio operase como un proyecto Java independiente, comunicándose a través de la red. En concreto, en *gradle* habría que crear un subproyecto por cada servicio con una estructura parecida a la siguiente:
 
-Por otro lado, como se muestra en el diagrama de secuencia de *Recibir mensaje*, para la comunicación asíncrona entre el backend y la interfaz de usuario se ha optado por **WebSockets** (representado en el flujo a través del bloque `ServidorMensajeria`). Esta decisión se debe a que introducir un broker de eventos habría añadido una complejidad innecesaria al proyecto. La arquitectura de WebSockets está plenamente implementada para enviar la señal `notificarNuevoMensaje(chatId)` en tiempo real a la UI.
+```
+love2day/
+├── build.gradle          ← root
+├── settings.gradle       ← lista de módulos
+├── account-service/
+│   ├── build.gradle
+│   └── src/
+── verification-service/
+│   ├── build.gradle
+│   └── src/
+├── profile-service/
+│   ├── build.gradle
+│   └── src/
+...
+```
 
+Sin embargo, dada la limitación de tiempo y a la escasez de recursos sobre como llevarlo a cabo, se ha optado por implementar todos los dominios dentro del mismo proyecto. Los distintos servicios mantienen una estricta separación lógica y se comunican internamente mediante llamadas a métodos. Este enfoque emula la separación de responsabilidades de los microservicios y se alinea con lo que técnicamente se conoce como un **monolito modular**.
 
 
 ---
 
-## 📦 Componentes del Sistema (Microservicios Lógicos)
+##  Decisiones de Infraestructura y Comunicación
+
+La integración con el proveedor externo de verificación de identidad, debido a que la mayoría son de pago, se ha simulado utilizando el `DummyVerifier`. Para poder cambiar de proveedor fácilmenete, se ha creado la interfaz `Verifier`, que el *dummy* implementa, y el `Verifier` se inyecta en el servicio. Usando  este patrón de inyección de dependencias, aumenta la flexibilidad y la resistencia a variaciones.
+
+Por otro lado, como se muestra en el diagrama de secuencia de *Recibir mensaje*, para la comunicación asíncrona entre el backend y la interfaz de usuario se ha optado por **WebSockets** (representado en el flujo a través del bloque `ServidorMensajeria`). Esta decisión se debe a que introducir un broker de eventos habría añadido una complejidad innecesaria al proyecto. La arquitectura de WebSockets está plenamente implementada para enviar la señal `notificarNuevoMensaje(chatId)` en tiempo real a la UI. Para escuchar el evento de *verificación completada* el cliente se conecta a `ws/verification`. Para escuchar al evento de *mensaje recibido* el cliente se conecta a `ws/messages`.
+
+
+---
+
+## Componentes del Sistema (Microservicios Lógicos)
 
 El ecosistema de la aplicación se divide en 6 servicios principales, cada uno encargado de una vertical exclusiva del negocio:
+
 
 | Servicio | Descripción | Responsabilidad Principal |
 | :--- | :--- | :--- |
@@ -39,9 +55,11 @@ El ecosistema de la aplicación se divide en 6 servicios principales, cada uno e
 | **Match Service** | Lógica de Emparejamiento | Comprobación en tiempo real de la reciprocidad de interacciones entre dos usuarios para generar un "Match". |
 | **Chat Service** | Mensajería | Gestión del canal de comunicación privado, historial de mensajes y estado de la conversación entre perfiles emparejados. |
 
+
+
 ---
 
-## 📋 Requisitos e Instalación
+## Requisitos e Instalación
 
 ### Prerrequisitos
 * Java Development Kit (JDK) 17 o superior.
