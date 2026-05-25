@@ -101,6 +101,7 @@ public class ChatService {
 
     @Transactional
     public void deleteByMatchIds(List<Long> matchIds) {
+        messageService.deleteByMatchIds(matchIds);
         chatsRepository.deleteAllByIdInBatch(matchIds);
     }
 }

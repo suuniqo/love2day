@@ -18,7 +18,7 @@ love2day/
 ├── account-service/
 │   ├── build.gradle
 │   └── src/
-── verification-service/
+├─ verification-service/
 │   ├── build.gradle
 │   └── src/
 ├── profile-service/
