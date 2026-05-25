@@ -32,7 +32,7 @@ public class MessageService {
 
         List<Message> unread = messages
             .stream()
-            .filter(msg -> !msg.isRead(receiverId))
+            .filter(msg -> !msg.isReadBy(receiverId))
             .toList();
 
         unread.forEach(msg -> msg.markAsRead());
@@ -49,7 +49,7 @@ public class MessageService {
 
         if (message.getSenderId() != userId) {
             throw new BadRequestException(
-                "Message can only be deleted by senderId " + message.getSenderId() + ": " + userId
+                "Message can only be deleted by senderId: " + userId
             );
         }
 
@@ -68,7 +68,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void deleteByMatchIds(List<Long> matchId) {
-        messagesRepository.deleteAllByMatchIdIn(matchId);
+    public void deleteByMatchIds(List<Long> matchIds) {
+        messagesRepository.deleteAllByMatchIdIn(matchIds);
     }
 }

@@ -44,6 +44,10 @@ public class Chat {
         return isActive;
     }
 
+    public boolean isBlocked() {
+        return !isActive;
+    }
+
     public void block() {
         this.isActive = false;
     }

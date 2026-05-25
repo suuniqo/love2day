@@ -96,7 +96,11 @@ public class Message {
         return createdAt;
     }
 
-    public MessageStatus getStatus(Long userId) {
+    public MessageStatus getStatus() {
+        return status;
+    }
+
+    public MessageStatus getStatusAs(Long userId) {
         if (userId == senderId) {
             return MessageStatus.READ;
         }
@@ -108,8 +112,8 @@ public class Message {
         this.status = status;
     }
 
-    public boolean isRead(Long userId) {
-        return getStatus(userId) == MessageStatus.READ;
+    public boolean isReadBy(Long userId) {
+        return getStatusAs(userId) == MessageStatus.READ;
     }
 
     public void markAsRead() {

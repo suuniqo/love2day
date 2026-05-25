@@ -78,7 +78,7 @@ public class SwipeService {
 
     @Transactional
     public void deleteByUserId(Long userId) {
-        swipesRepository.deleteAllBySourceIdOrTargetId(userId, userId);
         matchService.deleteByUserId(userId);
+        swipesRepository.deleteAllBySourceIdOrTargetId(userId, userId);
     }
 }

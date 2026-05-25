@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.upm.fi.love2day.exceptions.BadRequestException;
+import es.upm.fi.love2day.exceptions.ConflictException;
 import es.upm.fi.love2day.exceptions.NotFoundException;
 import es.upm.fi.love2day.model.Chat;
 import es.upm.fi.love2day.repository.ChatsRepository;
@@ -36,6 +37,9 @@ public class ChatService {
         if (!matchService.existsMatch(matchId)) {
             throw new NotFoundException("Match not found: " + matchId);
         }
+        if (chatsRepository.existsById(matchId)) {
+            throw new ConflictException("Chat already exists: " + matchId);
+        }
 
         Chat chat = Chat.create(matchId);
 
@@ -61,8 +65,12 @@ public class ChatService {
 
     @Transactional
     public Message sendMessage(Long matchId, Long senderId, String mediaKind, String content) {
-        if (!chatsRepository.existsById(matchId)) {
-            throw new NotFoundException("Chat not found: " + matchId);
+        Chat chat = chatsRepository
+            .findById(matchId)
+            .orElseThrow(() -> new NotFoundException("Chat not found: " + matchId));
+
+        if (chat.isBlocked()) {
+            throw new BadRequestException("Chat is blocked");
         }
 
         Long receiverId = matchService

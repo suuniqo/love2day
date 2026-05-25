@@ -77,12 +77,12 @@ public class AccountService {
             .findById(userId)
             .orElseThrow(() -> new NotFoundException("Account not found: " + userId));
 
-        accountsRepository.delete(account);
-
         // Se borran en cascada objetos dependientes
         verificationService.deleteByUserId(userId);
         profileService.deleteByUserId(userId);
         swipeService.deleteByUserId(userId);
+
+        accountsRepository.delete(account);
     }
 
     @EventListener
