@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.upm.fi.love2day.events.VerificationResolvedEvent;
 import es.upm.fi.love2day.exceptions.ConflictException;
+import es.upm.fi.love2day.exceptions.NotFoundException;
 import es.upm.fi.love2day.interfaces.Verifier;
 import es.upm.fi.love2day.model.Verification;
 import es.upm.fi.love2day.model.VerificationInquiry;
@@ -35,23 +36,23 @@ public class VerificationService {
 
     @Transactional
     public VerificationInquiry startVerification(Long userId) {
-        verificationsRepository.findById(userId).ifPresent(v -> {
-            if (v.getStatus() == VerificationStatus.VERIFIED) {
-                throw new ConflictException("Account is already verified");
-            }
-            if (v.getStatus() == VerificationStatus.PENDING) {
-                throw new ConflictException("Verification already in progress");
-            }
-        });
+        Verification verification = verificationsRepository
+            .findById(userId)
+            .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
-        Verification verification = Verification.create(
-            userId,
-            verifier.createInquiry(userId)
-        );
+        if (verification.getStatus() == VerificationStatus.VERIFIED) {
+            throw new ConflictException("Account is already verified");
+        }
+        if (verification.getStatus() == VerificationStatus.PENDING) {
+            throw new ConflictException("Verification already in progress");
+        }
 
+        VerificationInquiry inquiry = verifier.createInquiry(userId);
+
+        verification.restart();
         verificationsRepository.save(verification);
 
-        return verification.getInquiry();
+        return inquiry;
     }
 
     @Transactional(readOnly = true)
@@ -59,8 +60,19 @@ public class VerificationService {
         return verificationsRepository
             .findById(userId)
             .map(Verification::getStatus)
-            .orElse(VerificationStatus.UNVERIFIED);
+            .orElseThrow(() -> new NotFoundException("User not found: " + userId));
     }
+
+    @Transactional
+    public void createVerification(Long userId) {
+        if (verificationsRepository.existsById(userId)) {
+            throw new IllegalStateException("Verification already exists for user: " + userId);
+        }
+
+        Verification verification = Verification.create(userId);
+        verificationsRepository.save(verification);
+    }
+
 
     @Transactional
     public void resolveVerification(Long userId, VerificationStatus result) {

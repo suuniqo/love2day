@@ -13,9 +13,6 @@ public class Verification {
 	@Id
 	private Long userId;
 
-    @Column(nullable = false)
-    private VerificationInquiry inquiry;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private VerificationStatus status;
@@ -25,20 +22,15 @@ public class Verification {
 	
 	private Verification(Long userId, VerificationInquiry inquiry, VerificationStatus status) {
         this.userId = userId;
-        this.inquiry = inquiry;
         this.status = status;
     }
 
-	public static Verification create(Long userId, VerificationInquiry inquiry) {
-        return new Verification(userId, inquiry, VerificationStatus.PENDING);
+	public static Verification create(Long userId) {
+        return new Verification(userId, null, VerificationStatus.UNVERIFIED);
     }
 
     public Long getUserId() {
         return userId;
-    }
-
-    public VerificationInquiry getInquiry() {
-        return inquiry;
     }
 
     public VerificationStatus getStatus() {
@@ -47,5 +39,9 @@ public class Verification {
 
     public void setStatus(VerificationStatus status) {
         this.status = status;
+    }
+
+    public void restart() {
+        this.status = VerificationStatus.PENDING;
     }
 }

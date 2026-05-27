@@ -57,6 +57,7 @@ public class AccountService {
         accountsRepository.save(account);
 
         profileService.createProfile(account.getId());
+        verificationService.createVerification(account.getId());
 
         return account;
     }
