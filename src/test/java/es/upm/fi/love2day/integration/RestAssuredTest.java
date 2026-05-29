@@ -314,7 +314,7 @@ class RestAssuredTest {
     // I2: Partición Inválida: El userId del swipe no corresponde a ninguna cuenta.
     @Test
     void shouldReturn404_whenUserForSwipesDoesNotExist() {
-        Long userId = createAccount();
+        Long sourceId = createAccount();
 
         String swipe = """
         {
@@ -326,7 +326,7 @@ class RestAssuredTest {
         given()
             .contentType(ContentType.JSON)
             .body(swipe)
-            .queryParam("userId", userId)
+            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
@@ -357,7 +357,7 @@ class RestAssuredTest {
     //I4:Partición Inválida: El type del swipe no es válido.
     @Test
     void shouldReturn400_whenTypeIsInvalid() {
-        Long userId = createAccountFrom("swipeua");
+        Long sourceId = createAccountFrom("swipeua");
         Long targetId = createAccountFrom("swipeub");
 
         String swipe1 = """
@@ -369,7 +369,7 @@ class RestAssuredTest {
         given()
             .contentType(ContentType.JSON)
             .body(swipe1)
-            .queryParam("userId", userId)
+            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
