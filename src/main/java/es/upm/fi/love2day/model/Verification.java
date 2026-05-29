@@ -20,13 +20,13 @@ public class Verification {
     // necesario para JPA
 	public Verification() {}
 	
-	private Verification(Long userId, VerificationInquiry inquiry, VerificationStatus status) {
+	private Verification(Long userId, VerificationStatus status) {
         this.userId = userId;
         this.status = status;
     }
 
 	public static Verification create(Long userId) {
-        return new Verification(userId, null, VerificationStatus.UNVERIFIED);
+        return new Verification(userId, VerificationStatus.UNVERIFIED);
     }
 
     public Long getUserId() {
