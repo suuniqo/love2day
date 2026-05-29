@@ -201,15 +201,15 @@ class RestAssuredTest {
 
         String body = """
             {
+                "sourceId": "%d",
                 "targetId": "%d",
                 "type": "LIKE"
             }
-            """.formatted(targetId);
+            """.formatted(sourceId, targetId);
 
         given()
             .contentType(ContentType.JSON)
             .body(body)
-            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
@@ -227,15 +227,15 @@ class RestAssuredTest {
 
         String swipe1 = """
             {
+              "sourceId": "%d",
               "targetId": "%d",
               "type": "LIKE"
             }
-            """.formatted(targetId);
+            """.formatted(sourceId, targetId);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe1)
-            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
@@ -246,15 +246,15 @@ class RestAssuredTest {
 
         String swipe2 = """
         {
+            "sourceId": "%d",
             "targetId": "%d",
             "type": "LIKE"
         }
-        """.formatted(sourceId);
+        """.formatted(targetId, sourceId);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe2)
-            .queryParam("userId", targetId)
         .when()
             .post("/swipes")
         .then()
@@ -272,14 +272,14 @@ class RestAssuredTest {
 
         String body = """
          {
+                "sourceId": "%d",
                 "targetId": "%d",
                 "type": "PASS"
          }
-            """.formatted(targetId);
+            """.formatted(sourceId, targetId);
         given()
             .contentType(ContentType.JSON)
             .body(body)
-            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
@@ -296,6 +296,7 @@ class RestAssuredTest {
 
         String swipe = """
         {
+          "sourceId": "99999",
           "targetId": "%d",
           "type": "LIKE"
         }
@@ -304,7 +305,6 @@ class RestAssuredTest {
         given()
             .contentType(ContentType.JSON)
             .body(swipe)
-            .queryParam("userId", 99999L)  
         .when()
             .post("/swipes")
         .then()
@@ -318,15 +318,15 @@ class RestAssuredTest {
 
         String swipe = """
         {
+            "sourceId": "%d",
           "targetId": "99999",
           "type": "LIKE"
         }
-        """; 
+        """.formatted(sourceId);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe)
-            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
@@ -341,13 +341,13 @@ class RestAssuredTest {
 
         String swipe1 = """
             {
+                "sourceId": "%d",
                 "targetId": "%d"
             }
-            """.formatted(targetId);
+            """.formatted(sourceId, targetId);
         given()
             .contentType(ContentType.JSON)
             .body(swipe1)
-            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
@@ -362,14 +362,14 @@ class RestAssuredTest {
 
         String swipe1 = """
             {
+              "sourceId": "%d",
               "targetId": "%d",
               "type": "YES"
             }
-            """.formatted(targetId);
+            """.formatted(sourceId, targetId);
         given()
             .contentType(ContentType.JSON)
             .body(swipe1)
-            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
@@ -383,15 +383,15 @@ class RestAssuredTest {
 
         String swipe1 = """
             {
+              "sourceId": "%d",
               "targetId": "%d",
               "type": "LIKE"
             }
-            """.formatted(sourceId);
+            """.formatted(sourceId, sourceId);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe1)
-            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
@@ -406,15 +406,15 @@ class RestAssuredTest {
 
         String swipe1 = """
             {
+              "sourceId": "%d",
               "targetId": "%d",
               "type": "LIKE"
             }
-            """.formatted(targetId);
+            """.formatted(sourceId, targetId);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe1)
-            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
@@ -425,15 +425,15 @@ class RestAssuredTest {
 
         String swipe2 = """
         {
+            "sourceId": "%d",
             "targetId": "%d",
             "type": "LIKE"
         }
-        """.formatted(targetId);
+        """.formatted(sourceId, targetId);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe2)
-            .queryParam("userId", sourceId)
         .when()
             .post("/swipes")
         .then()
