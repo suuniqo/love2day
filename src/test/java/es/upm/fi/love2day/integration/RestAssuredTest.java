@@ -27,6 +27,8 @@ class RestAssuredTest {
     @Autowired
     private AccountsRepository accountRepository;
 
+
+
     @BeforeEach
     void setUp() {
         RestAssured.port = port;
@@ -69,7 +71,6 @@ class RestAssuredTest {
         existing.setStatus(status);
 
         verificationsRepository.save(existing);
-
     }
 
     // V1: Partición Válida: La cuenta existe y no ha sido verificada.
@@ -164,4 +165,247 @@ class RestAssuredTest {
     // =========================================================
     // POST /swipe
     // =========================================================
+     private Long createAccountSwipe(String username, String email, String password) {
+        String body = """
+            {
+              "username": "%s",
+              "email": "%s",
+              "password": "%s"
+            }
+            """.formatted(username, email, password);
+
+        return given()
+            .contentType(ContentType.JSON)
+            .body(body)
+        .when()
+            .post("/account")
+        .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath().getLong("id");
+    }
+
+    // V1: Partición Válida: El usuario hace swipe a otro usuario, pero no hay match (el otro usuario no ha hecho swipe).
+    @Test
+    void shouldReturn200WithSwipe_whenSwipeosLikeAndNoMatchExists() {
+    Long userId      = createAccountSwipe("swipeuser3", "swipeuser3@example.com", "secret123");
+    Long targetUserId = createAccountSwipe("swipeuser4", "swipeuser4@example.com", "secret123");
+    String body = """
+        {
+            "targetId": "%d",
+            "type": "LIKE"
+        }
+        """.formatted(targetUserId);
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(body)
+        .queryParam("userId", userId)
+    .when()
+        .post("/swipes")
+    .then()
+        .statusCode(200)
+        .body("swipe.id", notNullValue())
+        .body("swipe.type", equalTo("LIKE"))
+        .body("match", nullValue());
+    }
+
+    // V2: Partición Válida: El usuario hace swipe a otro usuario y se produce un match (el otro usuario también lo ha hecho).
+    @Test
+    void shouldReturn200WithSwipe_whenSwipeIsLikeAndMatchExists() {
+        Long userId = createAccountSwipe("swipeuser1", "swipeuser1@example.com", "secret123");
+        Long targetUserId = createAccountSwipe("swipeuser2", "swipeuser2@example.com", "secret123");
+        String swipe1 = """
+            {
+              "targetId": "%d",
+              "type": "LIKE"
+            }
+            """.formatted(targetUserId);
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe1)
+            .queryParam("userId", userId)
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(200);
+        String swipe2 = """
+        {
+            "targetId": "%d",
+            "type": "LIKE"
+        }
+        """.formatted(userId);
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe2)
+            .queryParam("userId", targetUserId)
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(200)
+            .body("swipe.id", notNullValue())
+            .body("match", notNullValue());
+    }
+
+    // V3: Partición Válida: El usuario hace swipe a otro usuario, pero no hay match (el otro usuario no ha hecho swipe).
+    @Test
+    void shouldReturn200WithSwipe_whenSwipeIsPassAndNoMatchExists() {
+        Long userId = createAccountSwipe("siper3", "swipeu3@example.com", "secret123");
+        Long targetUserId = createAccountSwipe("swiper4", "swipeu4@example.com", "secret123");
+        String body = """
+         {
+                "targetId": "%d",
+                "type": "PASS"
+         }
+            """.formatted(targetUserId);
+        given()
+            .contentType(ContentType.JSON)
+            .body(body)
+            .queryParam("userId", userId)
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(200)
+            .body("swipe.id", notNullValue())
+            .body("swipe.type", equalTo("PASS"))
+            .body("match", nullValue());
+    }
+
+    // I1: Partición Inválida: El userId que hace el swipe no corresponde a ninguna cuenta.
+    @Test
+    void shouldReturn404_whenUserWhoSwipesDoesNotExist() {
+        Long targetId = createAccountSwipe("swipeuser5", "5@example.com", "secret123");
+        String swipe = """
+        {
+          "targetId": "%d",
+          "type": "LIKE"
+        }
+        """.formatted(targetId);
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe)
+            .queryParam("userId", 99999L)  
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(404);
+    }
+
+    // I2: Partición Inválida: El userId del swipe no corresponde a ninguna cuenta.
+    @Test
+    void shouldReturn404_whenUserForSwipesDoesNotExist() {
+        Long userId = createAccountSwipe("swipeuser6", "6@example.com", "secret123");
+        String swipe = """
+        {
+          "targetId": "99999",
+          "type": "LIKE"
+        }
+        """; 
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe)
+            .queryParam("userId", userId)
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(404);
+    }
+
+    //I3:Partición Inválida: No hay type del swipe.
+    @Test
+    void shouldReturn400_whenTypeIsMissing() {
+        Long userId = createAccountSwipe("swipeu1", "swipeu1@example.com", "secret123");
+        Long targetUserId = createAccountSwipe("swipeu2", "swipeu2@example.com", "secret123");
+        String swipe1 = """
+            {
+                "targetId": "%d"
+            }
+            """.formatted(targetUserId);
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe1)
+            .queryParam("userId", userId)
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(400);
+    }
+
+    //I4:Partición Inválida: El type del swipe no es válido.
+    @Test
+    void shouldReturn400_whenTypeIsInvalid() {
+        Long userId = createAccountSwipe("swipeua", "swipeua@example.com", "secret123");
+        Long targetUserId = createAccountSwipe("swipeub", "swipeub@example.com", "secret123");
+        String swipe1 = """
+            {
+              "targetId": "%d",
+              "type": "YES"
+            }
+            """.formatted(targetUserId);
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe1)
+            .queryParam("userId", userId)
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(400);
+    }
+
+    //I5: Partición Inválida: El usuario hace swipe a sí mismo.
+    @Test
+    void shouldReturn400_whenUserSwipesToThemselves() {
+        Long userId = createAccountSwipe("swiper", "swiper@mail.com", "secret123");
+        String swipe1 = """
+            {
+              "targetId": "%d",
+              "type": "LIKE"
+            }
+            """.formatted(userId);
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe1)
+            .queryParam("userId", userId)
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(400);
+    }
+
+    //I6: Partición Inválida: El usuario hace swipe a un usuario al que ya le hizo swipe.
+    @Test
+    void shouldReturn400_whenUserSwipesToUserTheyAlreadySwiped() {
+        Long userId = createAccountSwipe("swipeuA", "swipeuA@example.com", "secret123");
+        Long targetUserId = createAccountSwipe("swipeuB", "swipeuB@example.com", "secret123");
+        String swipe1 = """
+            {
+              "targetId": "%d",
+              "type": "LIKE"
+            }
+            """.formatted(targetUserId);
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe1)
+            .queryParam("userId", userId)
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(200);
+        String swipe2 = """
+        {
+            "targetId": "%d",
+            "type": "LIKE"
+        }
+        """.formatted(targetUserId);
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe2)
+            .queryParam("userId", userId)
+        .when()
+            .post("/swipes")
+        .then()
+            .statusCode(400);
+    }
+
+
 }
