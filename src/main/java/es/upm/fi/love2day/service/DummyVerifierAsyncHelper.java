@@ -18,7 +18,7 @@ public class DummyVerifierAsyncHelper {
     @Async
     public void scheduleResolution(Long userId) {
         try {
-            Thread.sleep((5 + new Random().nextInt(6)) * 1000L);
+            Thread.sleep((2 + new Random().nextInt(3)) * 1000L);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return;
