@@ -1,7 +1,9 @@
 package es.upm.fi.love2day.dto;
 
+import com.sun.istack.NotNull;
+
 public record CreateAccountRequest(
-    String username,
-    String email,
-    String password
+    @NotNull String username,
+    @NotNull String email,
+    @NotNull String password
 ) {}

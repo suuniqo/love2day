@@ -1,5 +1,6 @@
 package es.upm.fi.love2day.integration;
 
+import es.upm.fi.love2day.model.SwipeType;
 import es.upm.fi.love2day.model.Verification;
 import es.upm.fi.love2day.model.VerificationStatus;
 import es.upm.fi.love2day.repository.VerificationsRepository;
@@ -79,15 +80,17 @@ class RestAssuredTest {
             .jsonPath().getLong("id");
     }
 
+    // =========================================================
+    // POST /verification?userId={userId}
+    // =========================================================
+    
+    // Ruta del endpoint
+    private static final String VERIFICATION_POST = "/verification";
+
     // Crea una nueva cuenta y retorna su `userId`.
     private Long createAccount() {
         return createAccountFrom("a");
     }
-
-
-    // =========================================================
-    // POST /verification?userId={userId}
-    // =========================================================
 
     // Fuerza un cambio en el `VerificationStatus` de la verificación del usuario.
     private void modifyStatus(Long userId, VerificationStatus status) {
@@ -109,7 +112,7 @@ class RestAssuredTest {
             .contentType(ContentType.JSON)
             .queryParam("userId", userId)
         .when()
-            .post("/verification")
+            .post(VERIFICATION_POST)
         .then()
             .statusCode(201)
             .body("id", notNullValue())
@@ -127,7 +130,7 @@ class RestAssuredTest {
             .contentType(ContentType.JSON)
             .queryParam("userId", userId)
         .when()
-            .post("/verification")
+            .post(VERIFICATION_POST)
         .then()
             .statusCode(201)
             .body("id", notNullValue())
@@ -145,7 +148,7 @@ class RestAssuredTest {
             .contentType(ContentType.JSON)
             .queryParam("userId", userId)
         .when()
-            .post("/verification")
+            .post(VERIFICATION_POST)
         .then()
             .statusCode(409);
     }
@@ -161,7 +164,7 @@ class RestAssuredTest {
             .contentType(ContentType.JSON)
             .queryParam("userId", userId)
         .when()
-            .post("/verification")
+            .post(VERIFICATION_POST)
         .then()
             .statusCode(409);
     }
@@ -173,7 +176,7 @@ class RestAssuredTest {
             .contentType(ContentType.JSON)
             .queryParam("userId", 99999L)  // no hay ninguna cuenta con este `userId`
         .when()
-            .post("/verification")
+            .post(VERIFICATION_POST)
         .then()
             .statusCode(404);
     }
@@ -184,7 +187,7 @@ class RestAssuredTest {
         given()
             .contentType(ContentType.JSON)
         .when()
-            .post("/verification")
+            .post(VERIFICATION_POST)
         .then()
             .statusCode(400);
     }
@@ -192,6 +195,20 @@ class RestAssuredTest {
     // =========================================================
     // POST /swipe
     // =========================================================
+    
+    // Ruta del endpoint
+    private static final String SWIPE_POST = "/swipe";
+
+    // Crea un swipe con los parámetros provistos.
+    private String createSwipeFrom(Long sourceId, Long targetId, SwipeType type) {
+        return """
+        {
+        "sourceId": "%d",
+        "targetId": "%d",
+        "type": "%s"
+        }
+        """.formatted(sourceId, targetId, type);
+    }
 
     // V1: Partición Válida: El usuario hace swipe a otro usuario, pero no hay match (el otro usuario no ha hecho swipe).
     @Test
@@ -199,21 +216,15 @@ class RestAssuredTest {
         Long sourceId = createAccountFrom("1");
         Long targetId = createAccountFrom("2");
 
-        String body = """
-            {
-                "sourceId": "%d",
-                "targetId": "%d",
-                "type": "LIKE"
-            }
-            """.formatted(sourceId, targetId);
+        String swipe = createSwipeFrom(sourceId, targetId, SwipeType.LIKE);
 
         given()
             .contentType(ContentType.JSON)
-            .body(body)
+            .body(swipe)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
-            .statusCode(200)
+            .statusCode(201)
             .body("swipe.id", notNullValue())
             .body("swipe.type", equalTo("LIKE"))
             .body("match", nullValue());
@@ -225,40 +236,28 @@ class RestAssuredTest {
         Long sourceId = createAccountFrom("1");
         Long targetId = createAccountFrom("2");
 
-        String swipe1 = """
-            {
-              "sourceId": "%d",
-              "targetId": "%d",
-              "type": "LIKE"
-            }
-            """.formatted(sourceId, targetId);
+        String swipe1 = createSwipeFrom(sourceId, targetId, SwipeType.LIKE);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe1)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
-            .statusCode(200)
+            .statusCode(201)
             .body("swipe.id", notNullValue())
             .body("swipe.type", equalTo("LIKE"))
             .body("match", nullValue());
 
-        String swipe2 = """
-        {
-            "sourceId": "%d",
-            "targetId": "%d",
-            "type": "LIKE"
-        }
-        """.formatted(targetId, sourceId);
+        String swipe2 = createSwipeFrom(targetId, sourceId, SwipeType.LIKE);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe2)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
-            .statusCode(200)
+            .statusCode(201)
             .body("swipe.id", notNullValue())
             .body("swipe.type", equalTo("LIKE"))
             .body("match", notNullValue());
@@ -270,20 +269,15 @@ class RestAssuredTest {
         Long sourceId = createAccountFrom("1");
         Long targetId = createAccountFrom("2");
 
-        String body = """
-         {
-                "sourceId": "%d",
-                "targetId": "%d",
-                "type": "PASS"
-         }
-            """.formatted(sourceId, targetId);
+        String swipe = createSwipeFrom(sourceId, targetId, SwipeType.PASS);
+
         given()
             .contentType(ContentType.JSON)
-            .body(body)
+            .body(swipe)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
-            .statusCode(200)
+            .statusCode(201)
             .body("swipe.id", notNullValue())
             .body("swipe.type", equalTo("PASS"))
             .body("match", nullValue());
@@ -294,19 +288,13 @@ class RestAssuredTest {
     void shouldReturn404_whenUserWhoSwipesDoesNotExist() {
         Long targetId = createAccount();
 
-        String swipe = """
-        {
-          "sourceId": "99999",
-          "targetId": "%d",
-          "type": "LIKE"
-        }
-        """.formatted(targetId);
+        String swipe = createSwipeFrom(99999L, targetId, SwipeType.LIKE);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
             .statusCode(404);
     }
@@ -316,19 +304,13 @@ class RestAssuredTest {
     void shouldReturn404_whenUserForSwipesDoesNotExist() {
         Long sourceId = createAccount();
 
-        String swipe = """
-        {
-            "sourceId": "%d",
-          "targetId": "99999",
-          "type": "LIKE"
-        }
-        """.formatted(sourceId);
+        String swipe = createSwipeFrom(sourceId, 99999L, SwipeType.LIKE);
 
         given()
             .contentType(ContentType.JSON)
             .body(swipe)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
             .statusCode(404);
     }
@@ -339,17 +321,18 @@ class RestAssuredTest {
         Long sourceId = createAccountFrom("1");
         Long targetId = createAccountFrom("2");
 
-        String swipe1 = """
+        String swipe = """
             {
                 "sourceId": "%d",
                 "targetId": "%d"
             }
             """.formatted(sourceId, targetId);
+
         given()
             .contentType(ContentType.JSON)
-            .body(swipe1)
+            .body(swipe)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
             .statusCode(400);
     }
@@ -360,18 +343,19 @@ class RestAssuredTest {
         Long sourceId = createAccountFrom("swipeua");
         Long targetId = createAccountFrom("swipeub");
 
-        String swipe1 = """
+        String swipe = """
             {
               "sourceId": "%d",
               "targetId": "%d",
               "type": "YES"
             }
             """.formatted(sourceId, targetId);
+
         given()
             .contentType(ContentType.JSON)
-            .body(swipe1)
+            .body(swipe)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
             .statusCode(400);
     }
@@ -381,19 +365,13 @@ class RestAssuredTest {
     void shouldReturn400_whenUserSwipesToThemselves() {
         Long sourceId = createAccount();
 
-        String swipe1 = """
-            {
-              "sourceId": "%d",
-              "targetId": "%d",
-              "type": "LIKE"
-            }
-            """.formatted(sourceId, sourceId);
+        String swipe = createSwipeFrom(sourceId, sourceId, SwipeType.LIKE);
 
         given()
             .contentType(ContentType.JSON)
-            .body(swipe1)
+            .body(swipe)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
             .statusCode(400);
     }
@@ -404,38 +382,26 @@ class RestAssuredTest {
         Long sourceId = createAccountFrom("1");
         Long targetId = createAccountFrom("2");
 
-        String swipe1 = """
-            {
-              "sourceId": "%d",
-              "targetId": "%d",
-              "type": "LIKE"
-            }
-            """.formatted(sourceId, targetId);
+        String swipe = createSwipeFrom(sourceId, targetId, SwipeType.LIKE);
 
+        // Primer swipe funciona
         given()
             .contentType(ContentType.JSON)
-            .body(swipe1)
+            .body(swipe)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
-            .statusCode(200)
+            .statusCode(201)
             .body("swipe.id", notNullValue())
             .body("swipe.type", equalTo("LIKE"))
             .body("match", nullValue());
 
-        String swipe2 = """
-        {
-            "sourceId": "%d",
-            "targetId": "%d",
-            "type": "LIKE"
-        }
-        """.formatted(sourceId, targetId);
-
+        // Segundo produce un error
         given()
             .contentType(ContentType.JSON)
-            .body(swipe2)
+            .body(swipe)
         .when()
-            .post("/swipes")
+            .post(SWIPE_POST)
         .then()
             .statusCode(400);
     }

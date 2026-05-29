@@ -23,6 +23,7 @@ import es.upm.fi.love2day.mapper.ChatMapper;
 import es.upm.fi.love2day.mapper.MessageMapper;
 import es.upm.fi.love2day.model.Chat;
 import es.upm.fi.love2day.service.ChatService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/chat")
@@ -70,7 +71,7 @@ public class ChatController {
     public MessageDto sendMessage(
         @PathVariable Long matchId,
         @PathVariable Long userId,
-        @RequestBody SendMessageRequest request
+        @Valid @RequestBody SendMessageRequest request
     ) {
         return messageMapper.toDto(
             chatService.sendMessage(matchId, userId, request.mediaKind(), request.content())
