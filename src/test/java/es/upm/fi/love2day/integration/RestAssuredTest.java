@@ -358,13 +358,14 @@ class RestAssuredTest {
     @Test
     void shouldReturn400_whenTypeIsInvalid() {
         Long userId = createAccountFrom("swipeua");
-        Long targetUserId = createAccountFrom("swipeub");
+        Long targetId = createAccountFrom("swipeub");
+
         String swipe1 = """
             {
               "targetId": "%d",
               "type": "YES"
             }
-            """.formatted(targetUserId);
+            """.formatted(targetId);
         given()
             .contentType(ContentType.JSON)
             .body(swipe1)
