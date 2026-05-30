@@ -210,7 +210,7 @@ class RestAssuredTest {
         """.formatted(sourceId, targetId, type);
     }
 
-    // V1: Partición Válida: El usuario hace swipe a otro usuario, pero no hay match (el otro usuario no ha hecho swipe).
+    // V1,V2,V3: Partición Válida: El usuario hace swipe a otro usuario, pero no hay match (el otro usuario no ha hecho swipe).
     @Test
     void shouldReturn200WithSwipe_whenSwipeIsLikeAndNoMatchExists() {
         Long sourceId = createAccountFrom("1");
@@ -230,7 +230,7 @@ class RestAssuredTest {
             .body("match", nullValue());
     }
 
-    // V2: Partición Válida: El usuario hace swipe a otro usuario y se produce un match (el otro usuario también lo ha hecho).
+    // V1,V2,V4: Partición Válida: El usuario hace swipe a otro usuario y se produce un match (el otro usuario también lo ha hecho).
     @Test
     void shouldReturn200WithSwipe_whenSwipeIsLikeAndMatchExists() {
         Long sourceId = createAccountFrom("1");
@@ -263,7 +263,7 @@ class RestAssuredTest {
             .body("match", notNullValue());
     }
 
-    // V3: Partición Válida: El usuario hace swipe a otro usuario, pero no hay match (el otro usuario no ha hecho swipe).
+    // V1,V2,V5: Partición Válida: El usuario hace swipe a otro usuario, pero no hay match (el otro usuario no ha hecho swipe).
     @Test
     void shouldReturn200WithSwipe_whenSwipeIsPassAndNoMatchExists() {
         Long sourceId = createAccountFrom("1");
@@ -285,10 +285,10 @@ class RestAssuredTest {
 
     // I1: Partición Inválida: El userId que hace el swipe no corresponde a ninguna cuenta.
     @Test
-    void shouldReturn404_whenUserWhoSwipesDoesNotExist() {
+    void shouldReturn404_whenUserWhoSwipesNotFound() {
         Long targetId = createAccount();
 
-        String swipe = createSwipeFrom(99999L, targetId, SwipeType.LIKE);
+        String swipe = createSwipeFrom(99999, targetId, SwipeType.LIKE);
 
         given()
             .contentType(ContentType.JSON)
@@ -299,9 +299,30 @@ class RestAssuredTest {
             .statusCode(404);
     }
 
-    // I2: Partición Inválida: El userId del swipe no corresponde a ninguna cuenta.
+    // I2: Partición Inválida: El userId del swipe es null.
     @Test
-    void shouldReturn404_whenUserForSwipesDoesNotExist() {
+    void shouldReturn400_whenUserWhoSwipesDoesNotExist() {
+        Long targetId = createAccountFrom("2");
+
+        String swipe = """
+            {
+              "targetId": "%d",
+              "type": "LIKE"
+            }
+            """.formatted( targetId);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe)
+        .when()
+            .post(SWIPE_POST)
+        .then()
+            .statusCode(400);
+    }
+
+    // I3: Partición Inválida: El userId del swipe no corresponde a ninguna cuenta.
+    @Test
+    void shouldReturn404_whenUserForSwipesNotFound() {
         Long sourceId = createAccount();
 
         String swipe = createSwipeFrom(sourceId, 99999L, SwipeType.LIKE);
@@ -315,41 +336,17 @@ class RestAssuredTest {
             .statusCode(404);
     }
 
-    //I3:Partición Inválida: No hay type del swipe.
+    // I4: Partición Inválida: El userId del swipe no corresponde a ninguna cuenta.
     @Test
-    void shouldReturn400_whenTypeIsMissing() {
+    void shouldReturn400_whenUserForSwipesDoesNotExist() {
         Long sourceId = createAccountFrom("1");
-        Long targetId = createAccountFrom("2");
 
         String swipe = """
             {
                 "sourceId": "%d",
-                "targetId": "%d"
+                "type": "LIKE"
             }
-            """.formatted(sourceId, targetId);
-
-        given()
-            .contentType(ContentType.JSON)
-            .body(swipe)
-        .when()
-            .post(SWIPE_POST)
-        .then()
-            .statusCode(400);
-    }
-
-    //I4:Partición Inválida: El type del swipe no es válido.
-    @Test
-    void shouldReturn400_whenTypeIsInvalid() {
-        Long sourceId = createAccountFrom("swipeua");
-        Long targetId = createAccountFrom("swipeub");
-
-        String swipe = """
-            {
-              "sourceId": "%d",
-              "targetId": "%d",
-              "type": "YES"
-            }
-            """.formatted(sourceId, targetId);
+            """.formatted( sourceId);
 
         given()
             .contentType(ContentType.JSON)
@@ -405,4 +402,50 @@ class RestAssuredTest {
         .then()
             .statusCode(400);
     }
+
+    //I7: Partición Inválida: No hay type del swipe.
+    @Test
+    void shouldReturn400_whenTypeIsMissing() {
+        Long sourceId = createAccountFrom("1");
+        Long targetId = createAccountFrom("2");
+
+        String swipe = """
+            {
+                "sourceId": "%d",
+                "targetId": "%d"
+            }
+            """.formatted(sourceId, targetId);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe)
+        .when()
+            .post(SWIPE_POST)
+        .then()
+            .statusCode(400);
+    }
+
+    //I8:Partición Inválida: El type del swipe no es válido.
+    @Test
+    void shouldReturn400_whenTypeIsInvalid() {
+        Long sourceId = createAccountFrom("1");
+        Long targetId = createAccountFrom("2");
+
+        String swipe = """
+            {
+              "sourceId": "%d",
+              "targetId": "%d",
+              "type": "YES"
+            }
+            """.formatted(sourceId, targetId);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(swipe)
+        .when()
+            .post(SWIPE_POST)
+        .then()
+            .statusCode(400);
+    }
+
 }

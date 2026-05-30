@@ -1,6 +1,6 @@
 package es.upm.fi.love2day.dto;
 
-import com.sun.istack.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public record SendMessageRequest(
     @NotNull String mediaKind,
