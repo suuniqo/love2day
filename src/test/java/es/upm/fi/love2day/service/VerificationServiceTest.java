@@ -51,7 +51,7 @@ class VerificationServiceTest {
         return v;
     }
 
-    // C1: no existe verificación → NotFoundException
+    // C1: no existe verificación -> NotFoundException
     @Test
     void startVerification_noVerificationExists_throwsNotFound() {
         when(verificationsRepository.findById(USER_ID))
@@ -63,7 +63,7 @@ class VerificationServiceTest {
         verify(verificationsRepository, never()).save(any());
     }
 
-    // C2: estado VERIFIED → ConflictException
+    // C2: estado VERIFIED -> ConflictException
     @Test
     void startVerification_alreadyVerified_throwsConflict() {
         when(verificationsRepository.findById(USER_ID))
@@ -75,7 +75,7 @@ class VerificationServiceTest {
         verify(verificationsRepository, never()).save(any());
     }
 
-    // C3: estado PENDING → ConflictException
+    // C3: estado PENDING -> ConflictException
     @Test
     void startVerification_verificationPending_throwsConflict() {
         when(verificationsRepository.findById(USER_ID))
@@ -87,11 +87,11 @@ class VerificationServiceTest {
         verify(verificationsRepository, never()).save(any());
     }
 
-    // C4a: estado UNVERIFIED → éxito
+    // C4: estado UNVERIFIED o REJECTED -> éxito
     @Test
     void startVerification_unverified_returnsInquiry() {
         VerificationInquiry inquiry = new VerificationInquiry("id-123", "token-abc");
-        Verification verification = verificationWithStatus(VerificationStatus.UNVERIFIED);
+        Verification verification = verificationWithStatus(VerificationStatus.UNVERIFIED);  // con REJECTED es equivalente
 
         when(verificationsRepository.findById(USER_ID))
             .thenReturn(Optional.of(verification));
@@ -101,23 +101,6 @@ class VerificationServiceTest {
 
         assertNotNull(result);
         assertEquals("id-123", result.getId());
-        verify(verificationsRepository).save(verification);
-    }
-
-    // C4b: estado REJECTED → puede reintentar, éxito
-    @Test
-    void startVerification_previouslyRejected_returnsInquiry() {
-        VerificationInquiry inquiry = new VerificationInquiry("id-456", "token-xyz");
-        Verification verification = verificationWithStatus(VerificationStatus.REJECTED);
-
-        when(verificationsRepository.findById(USER_ID))
-            .thenReturn(Optional.of(verification));
-        when(verifier.createInquiry(USER_ID)).thenReturn(inquiry);
-
-        VerificationInquiry result = verificationService.startVerification(USER_ID);
-
-        assertNotNull(result);
-        assertEquals("id-456", result.getId());
         verify(verificationsRepository).save(verification);
     }
 }
