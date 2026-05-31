@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "4.0.6"
 	id("io.spring.dependency-management") version "1.1.7"
+    jacoco
 }
 
 group = "es.upm.fi"
@@ -37,5 +38,17 @@ tasks.withType<Test> {
     testLogging {
         events("passed", "failed", "skipped")
         showStandardStreams = false
+    }
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = false
+        html.required = true
     }
 }
