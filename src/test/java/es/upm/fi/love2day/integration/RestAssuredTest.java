@@ -210,7 +210,7 @@ class RestAssuredTest {
         """.formatted(sourceId, targetId, type);
     }
 
-    // V1,V2,V3: Partición Válida: El usuario hace swipe a otro usuario, pero no hay match (el otro usuario no ha hecho swipe).
+    // V1, V2, V3: Partición Válida: El usuario hace swipe a otro usuario con `type` `LIKE`, pero no hay match.
     @Test
     void shouldReturn200WithSwipe_whenSwipeIsLikeAndNoMatchExists() {
         Long sourceId = createAccountFrom("1");
@@ -230,7 +230,7 @@ class RestAssuredTest {
             .body("match", nullValue());
     }
 
-    // V1,V2,V4: Partición Válida: El usuario hace swipe a otro usuario y se produce un match (el otro usuario también lo ha hecho).
+    // V1, V2, V4: Partición Válida: El usuario hace swipe a otro usuario con `type` `LIKE` y se produce un match.
     @Test
     void shouldReturn200WithSwipe_whenSwipeIsLikeAndMatchExists() {
         Long sourceId = createAccountFrom("1");
@@ -263,7 +263,7 @@ class RestAssuredTest {
             .body("match", notNullValue());
     }
 
-    // V1,V2,V5: Partición Válida: El usuario hace swipe a otro usuario, pero no hay match (el otro usuario no ha hecho swipe).
+    // V1, V2, V5: Partición Válida: El usuario hace swipe a otro usuario con `type` `PASS`.
     @Test
     void shouldReturn200WithSwipe_whenSwipeIsPassAndNoMatchExists() {
         Long sourceId = createAccountFrom("1");
@@ -283,12 +283,15 @@ class RestAssuredTest {
             .body("match", nullValue());
     }
 
-    // I1: Partición Inválida: El userId que hace el swipe no corresponde a ninguna cuenta.
+    // I1: Partición Inválida: El `sourceId` del swipe no corresponde a ninguna cuenta.
+    //
+    // NOTA: Este test siempre fallará ya que al no haber implementado autenticación
+    // no hay manera de saber si el `sourceId` es legítimo.
     @Test
     void shouldReturn404_whenUserWhoSwipesNotFound() {
         Long targetId = createAccount();
 
-        String swipe = createSwipeFrom(99999, targetId, SwipeType.LIKE);
+        String swipe = createSwipeFrom(99999L, targetId, SwipeType.LIKE);
 
         given()
             .contentType(ContentType.JSON)
@@ -299,7 +302,7 @@ class RestAssuredTest {
             .statusCode(404);
     }
 
-    // I2: Partición Inválida: El userId del swipe es null.
+    // I2: Partición Inválida: El `sourceId` del swipe es null.
     @Test
     void shouldReturn400_whenUserWhoSwipesDoesNotExist() {
         Long targetId = createAccountFrom("2");
@@ -320,7 +323,10 @@ class RestAssuredTest {
             .statusCode(400);
     }
 
-    // I3: Partición Inválida: El userId del swipe no corresponde a ninguna cuenta.
+    // I3: Partición Inválida: El `targetId` del swipe no corresponde a ninguna cuenta.
+    //
+    // NOTA: Este test siempre fallará ya que al no haber implementado autenticación
+    // no hay manera de saber si el `targetId` es legítimo.
     @Test
     void shouldReturn404_whenUserForSwipesNotFound() {
         Long sourceId = createAccount();
@@ -336,7 +342,7 @@ class RestAssuredTest {
             .statusCode(404);
     }
 
-    // I4: Partición Inválida: El userId del swipe no corresponde a ninguna cuenta.
+    // I4: Partición Inválida: El `targetId` del swipe es null.
     @Test
     void shouldReturn400_whenUserForSwipesDoesNotExist() {
         Long sourceId = createAccountFrom("1");
@@ -357,7 +363,7 @@ class RestAssuredTest {
             .statusCode(400);
     }
 
-    //I5: Partición Inválida: El usuario hace swipe a sí mismo.
+    // I5: Partición Inválida: El usuario se hace swipe a sí mismo.
     @Test
     void shouldReturn400_whenUserSwipesToThemselves() {
         Long sourceId = createAccount();
@@ -373,7 +379,7 @@ class RestAssuredTest {
             .statusCode(400);
     }
 
-    //I6: Partición Inválida: El usuario hace swipe a un usuario al que ya le hizo swipe.
+    // I6: Partición Inválida: El usuario hace swipe a un usuario al que ya le hizo.
     @Test
     void shouldReturn400_whenUserSwipesToUserTheyAlreadySwiped() {
         Long sourceId = createAccountFrom("1");
@@ -403,7 +409,7 @@ class RestAssuredTest {
             .statusCode(400);
     }
 
-    //I7: Partición Inválida: No hay type del swipe.
+    // I7: Partición Inválida: El `type` del swipe es null.
     @Test
     void shouldReturn400_whenTypeIsMissing() {
         Long sourceId = createAccountFrom("1");
@@ -425,7 +431,7 @@ class RestAssuredTest {
             .statusCode(400);
     }
 
-    //I8:Partición Inválida: El type del swipe no es válido.
+    // I8: Partición Inválida: El `type` del swipe tiene un valor inválido.
     @Test
     void shouldReturn400_whenTypeIsInvalid() {
         Long sourceId = createAccountFrom("1");
