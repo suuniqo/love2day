@@ -21,6 +21,7 @@ import es.upm.fi.love2day.mapper.SwipeMapper;
 import es.upm.fi.love2day.mapper.SwipeResultMapper;
 import es.upm.fi.love2day.service.SwipeService;
 import es.upm.fi.love2day.service.SwipeService.SwipeResult;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/swipe")
@@ -37,7 +38,7 @@ public class SwipeController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SwipeResultDto createSwipe(@RequestBody CreateSwipeDto request) {
+    public SwipeResultDto createSwipe(@Valid @RequestBody CreateSwipeDto request) {
         SwipeResult result = swipeService.createSwipe(
             request.sourceId(),
             request.targetId(),

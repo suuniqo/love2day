@@ -7,16 +7,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.util.Optional;
-
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-
 import es.upm.fi.love2day.exceptions.ConflictException;
 import es.upm.fi.love2day.exceptions.NotFoundException;
 import es.upm.fi.love2day.interfaces.Verifier;
@@ -30,13 +29,10 @@ class VerificationServiceTest {
 
     @Mock
     private VerificationsRepository verificationsRepository;
-
     @Mock
     private VerificationWebSocketHandler socketHandler;
-
     @Mock
     private ApplicationEventPublisher eventPublisher;
-
     @Mock
     private Verifier verifier;
 
@@ -51,56 +47,62 @@ class VerificationServiceTest {
         return v;
     }
 
-    // C1: no existe verificación -> NotFoundException
-    @Test
-    void startVerification_noVerificationExists_throwsNotFound() {
-        when(verificationsRepository.findById(USER_ID))
-            .thenReturn(Optional.empty());
+    @Nested
+    @DisplayName("Tests para el método startVerification()")
+    class StartVerificationTests {
 
-        assertThrows(NotFoundException.class,
-            () -> verificationService.startVerification(USER_ID));
+        // C1: no existe verificación -> NotFoundException
+        @Test
+        @DisplayName("Camino 1: Lanza excepción si no existe verificación para el usuario")
+        void startVerification_noVerificationExists_throwsNotFound() {
+            when(verificationsRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-        verify(verificationsRepository, never()).save(any());
-    }
+            assertThrows(NotFoundException.class,
+                () -> verificationService.startVerification(USER_ID));
 
-    // C2: estado VERIFIED -> ConflictException
-    @Test
-    void startVerification_alreadyVerified_throwsConflict() {
-        when(verificationsRepository.findById(USER_ID))
-            .thenReturn(Optional.of(verificationWithStatus(VerificationStatus.VERIFIED)));
+            verify(verificationsRepository, never()).save(any());
+        }
 
-        assertThrows(ConflictException.class,
-            () -> verificationService.startVerification(USER_ID));
+        // C2: estado VERIFIED -> ConflictException
+        @Test
+        @DisplayName("Camino 2: Lanza excepción si el usuario ya está verificado")
+        void startVerification_alreadyVerified_throwsConflict() {
+            when(verificationsRepository.findById(USER_ID))
+                .thenReturn(Optional.of(verificationWithStatus(VerificationStatus.VERIFIED)));
 
-        verify(verificationsRepository, never()).save(any());
-    }
+            assertThrows(ConflictException.class,
+                () -> verificationService.startVerification(USER_ID));
 
-    // C3: estado PENDING -> ConflictException
-    @Test
-    void startVerification_verificationPending_throwsConflict() {
-        when(verificationsRepository.findById(USER_ID))
-            .thenReturn(Optional.of(verificationWithStatus(VerificationStatus.PENDING)));
+            verify(verificationsRepository, never()).save(any());
+        }
 
-        assertThrows(ConflictException.class,
-            () -> verificationService.startVerification(USER_ID));
+        // C3: estado PENDING -> ConflictException
+        @Test
+        @DisplayName("Camino 3: Lanza excepción si la verificación ya está pendiente")
+        void startVerification_verificationPending_throwsConflict() {
+            when(verificationsRepository.findById(USER_ID))
+                .thenReturn(Optional.of(verificationWithStatus(VerificationStatus.PENDING)));
 
-        verify(verificationsRepository, never()).save(any());
-    }
+            assertThrows(ConflictException.class,
+                () -> verificationService.startVerification(USER_ID));
 
-    // C4: estado UNVERIFIED o REJECTED -> éxito
-    @Test
-    void startVerification_unverified_returnsInquiry() {
-        VerificationInquiry inquiry = new VerificationInquiry("id-123", "token-abc");
-        Verification verification = verificationWithStatus(VerificationStatus.UNVERIFIED);  // con REJECTED es equivalente
+            verify(verificationsRepository, never()).save(any());
+        }
 
-        when(verificationsRepository.findById(USER_ID))
-            .thenReturn(Optional.of(verification));
-        when(verifier.createInquiry(USER_ID)).thenReturn(inquiry);
+        // C4: estado UNVERIFIED o REJECTED -> éxito
+        @Test
+        @DisplayName("Camino 4: Crea y guarda la inquiry correctamente si el estado es UNVERIFIED o REJECTED")
+        void startVerification_unverified_returnsInquiry() {
+            VerificationInquiry inquiry = new VerificationInquiry("id-123", "token-abc");
+            Verification verification = verificationWithStatus(VerificationStatus.UNVERIFIED);
+            when(verificationsRepository.findById(USER_ID)).thenReturn(Optional.of(verification));
+            when(verifier.createInquiry(USER_ID)).thenReturn(inquiry);
 
-        VerificationInquiry result = verificationService.startVerification(USER_ID);
+            VerificationInquiry result = verificationService.startVerification(USER_ID);
 
-        assertNotNull(result);
-        assertEquals("id-123", result.getId());
-        verify(verificationsRepository).save(verification);
+            assertNotNull(result);
+            assertEquals("id-123", result.getId());
+            verify(verificationsRepository).save(verification);
+        }
     }
 }

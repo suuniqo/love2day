@@ -44,6 +44,9 @@ public class SwipeService {
 
     @Transactional
     public SwipeResult createSwipe(Long sourceId, Long targetId, SwipeType type) {
+        if (sourceId == targetId) {
+            throw new BadRequestException("Swipe cannot be made to self: " + sourceId);
+        }
         if (swipesRepository.existsBySourceIdAndTargetId(sourceId, targetId)) {
             throw new BadRequestException("Swipe already made from " + sourceId + " to " + targetId);
         }

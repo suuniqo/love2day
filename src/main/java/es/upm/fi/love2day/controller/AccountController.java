@@ -5,6 +5,8 @@ import es.upm.fi.love2day.dto.CreateAccountRequest;
 import es.upm.fi.love2day.mapper.AccountMapper;
 import es.upm.fi.love2day.model.Account;
 import es.upm.fi.love2day.service.AccountService;
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +23,7 @@ public class AccountController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public AccountDto createAccount(@RequestBody CreateAccountRequest request) {
+    public AccountDto createAccount(@Valid @RequestBody CreateAccountRequest request) {
         Account account = accountService.createAccount(request);
 
         return accountMapper.toDto(account);
